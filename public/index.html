@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI HOT — AI 资讯速览</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-page:#f4f6f9;--bg-surface:#ffffff;
+  --text-primary:#1d1d1f;--text-secondary:#687089;--text-tertiary:#a1a8b5;
+  --border-color:#e2e6ef;
+  --primary:#3880ff;--primary-light:rgba(56,128,255,0.08);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.08),0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg:0 10px 30px rgba(0,0,0,0.12),0 3px 10px rgba(0,0,0,0.05);
+  --radius-sm:10px;--radius-md:16px;--radius-lg:22px;--radius-full:9999px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --transition:200ms cubic-bezier(0.4,0,0.2,1);
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);color:var(--text-primary);min-height:100vh;background:var(--bg-page);line-height:1.5}
+
+.header{position:sticky;top:0;z-index:100;background:var(--bg-surface);border-bottom:1px solid var(--border-color);padding:0 24px}
+.header-inner{max-width:1200px;margin:0 auto;height:64px;display:flex;align-items:center;gap:8px}
+.logo{font-size:18px;font-weight:700;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px;color:var(--text-primary);flex-shrink:0}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3880ff,#5856d6);display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:17px;height:17px;color:#fff}
+.logo-text{font-weight:800}.logo-sub{font-weight:400;font-size:13px;color:var(--text-tertiary)}
+
+.search-wrap{flex:1;max-width:340px;position:relative}
+.search-input{width:100%;padding:9px 36px 9px 40px;background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-full);color:var(--text-primary);font-size:14px;outline:none;transition:border-color var(--transition),box-shadow var(--transition)}
+.search-input::placeholder{color:var(--text-tertiary)}
+.search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(56,128,255,0.1)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);pointer-events:none;display:flex;align-items:center}
+.search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--border-color);color:var(--text-tertiary);cursor:pointer;font-size:14px;display:none;padding:2px 8px;border-radius:6px;line-height:1;transition:all var(--transition)}
+.search-clear:hover{background:var(--bg-page);color:var(--text-secondary)}.search-clear.visible{display:flex;align-items:center;justify-content:center}
+
+.header-btn{background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:8px 16px;cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:600;transition:all var(--transition);white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.header-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.header-btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.header-btn--primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.header-btn--primary:hover{background:#2c6ce0;border-color:#2c6ce0;color:#fff;box-shadow:0 2px 8px rgba(56,128,255,0.25)}
+
+.refresh-indicator{font-size:11px;color:var(--text-tertiary);display:flex;align-items:center;gap:4px;flex-shrink:0;white-space:nowrap}
+.refresh-dot{width:6px;height:6px;border-radius:50%;background:#10b981;flex-shrink:0}
+.refresh-dot.stale{background:#f59e0b}
+.refresh-dot.error{background:#ef4444}
+
+.tab-bar{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:0;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;position:sticky;top:65px;z-index:99;background:var(--bg-surface);border-bottom:1px solid var(--border-color)}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{padding:14px 20px;font-size:14px;font-weight:500;white-space:nowrap;cursor:pointer;color:var(--text-secondary);background:none;border:none;border-bottom:2px solid transparent;flex-shrink:0;transition:color var(--transition),border-color var(--transition)}
+.tab:hover{color:var(--text-primary)}.tab:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+.content{max-width:1200px;margin:0 auto;padding:28px 24px 80px}
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:4px 0 20px;font-size:13px;color:var(--text-tertiary)}
+.status-bar .see-all{color:var(--primary);font-weight:500;text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:2px}
+.status-bar .see-all:hover{text-decoration:underline}
+
+.daily-banner{background:linear-gradient(135deg,#3880ff 0%,#5856d6 50%,#7c3aed 100%);border-radius:var(--radius-lg);padding:28px 32px;color:#fff;cursor:pointer;transition:transform var(--transition),box-shadow var(--transition);margin-bottom:24px;position:relative;overflow:hidden}
+.daily-banner:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(56,128,255,0.3)}
+.daily-banner::after{content:'';position:absolute;top:-30%;right:-10%;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none}
+.daily-banner-label{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;opacity:0.8;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.daily-banner-label svg{width:14px;height:14px}
+.daily-banner-title{font-size:20px;font-weight:800;line-height:1.4;margin-bottom:8px;max-width:80%}
+.daily-banner-meta{font-size:13px;opacity:0.75;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.daily-banner-count{background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:600}
+.daily-banner-arrow{position:absolute;right:28px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;transition:background var(--transition)}
+.daily-banner:hover .daily-banner-arrow{background:rgba(255,255,255,0.25)}
+.daily-banner-arrow svg{width:18px;height:18px;color:#fff}
+
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{position:relative;border-radius:var(--radius-md);overflow:hidden;padding:22px 20px 18px;min-height:180px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform var(--transition),box-shadow var(--transition);animation:cardIn 0.35s ease both;color:#fff}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}.card:active{transform:scale(0.97)}
+.card--model{background:linear-gradient(135deg,#3880ff 0%,#5856d6 60%,#7c3aed 100%)}
+.card--product{background:linear-gradient(135deg,#8b5cf6 0%,#a855f7 60%,#c084fc 100%)}
+.card--industry{background:linear-gradient(135deg,#06b6d4 0%,#22d3ee 60%,#67e8f9 100%)}
+.card--paper{background:linear-gradient(135deg,#10b981 0%,#34d399 60%,#6ee7b7 100%)}
+.card--tip{background:linear-gradient(135deg,#f43f5e 0%,#fb7185 60%,#fda4af 100%)}
+.card--default{background:linear-gradient(135deg,#64748b 0%,#94a3b8 100%)}
+.card-icon{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.15);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0.85;transition:opacity var(--transition)}
+.card:hover .card-icon{opacity:1}.card-icon svg{width:22px;height:22px;color:#fff}
+.card-body{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-top:32px}
+.card-title{font-size:14.5px;font-weight:700;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:auto;padding-top:4px}
+.card-footer{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-time{font-size:11.5px;opacity:0.65;white-space:nowrap;flex-shrink:0}
+.card-tag{font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+
+.section-label{font-size:12px;font-weight:700;color:var(--text-tertiary);padding:28px 0 14px;letter-spacing:0.05em;text-transform:uppercase;display:flex;align-items:center;gap:10px;grid-column:1/-1}
+.section-label::before{content:'';width:4px;height:16px;border-radius:2px;flex-shrink:0}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border-color)}
+.sl-ai-models::before{background:#3880ff}.sl-ai-products::before{background:#8b5cf6}.sl-industry::before{background:#06b6d4}.sl-paper::before{background:#10b981}.sl-tip::before{background:#f43f5e}
+
+.loading{grid-column:1/-1;display:flex;justify-content:center;align-items:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;gap:10px}
+.loading-spinner{width:22px;height:22px;border:2.5px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin 0.75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-tertiary)}
+.empty-state-icon{width:52px;height:52px;margin:0 auto 16px;border-radius:50%;background:var(--bg-page);display:flex;align-items:center;justify-content:center}
+.empty-state-icon svg{width:24px;height:24px;color:var(--text-tertiary)}
+.empty-state-text{font-size:14px;line-height:1.7}
+.load-more{grid-column:1/-1;text-align:center;padding:24px}
+.load-more-btn{background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-full);padding:10px 32px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--transition);box-shadow:var(--shadow-sm)}
+.load-more-btn:hover{border-color:var(--primary);color:var(--primary);box-shadow:var(--shadow-md)}.load-more-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(29,29,31,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity 0.25s}
+.overlay.visible{opacity:1;pointer-events:auto}
+
+.detail-modal{position:fixed;z-index:250;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.95);width:92%;max-width:560px;max-height:85vh;background:rgba(255,255,255,0.92);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-radius:var(--radius-lg);border:1px solid rgba(255,255,255,0.6);box-shadow:0 24px 80px rgba(0,0,0,0.18),0 8px 24px rgba(0,0,0,0.08);opacity:0;pointer-events:none;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden}
+.detail-modal.visible{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.detail-modal-header{padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.detail-modal-cat{font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:4px 10px;border-radius:6px;margin-bottom:10px;display:inline-block}
+.detail-modal-title{font-size:18px;font-weight:700;line-height:1.5;color:var(--text-primary);flex:1}
+.detail-modal-close{background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-tertiary);font-size:18px;transition:all var(--transition);flex-shrink:0}
+.detail-modal-close:hover{background:var(--border-color);color:var(--text-primary)}
+.detail-modal-meta{padding:8px 28px 0;font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:8px}
+.detail-modal-body{padding:16px 28px;flex:1;overflow-y:auto}
+.detail-modal-body::-webkit-scrollbar{width:5px}
+.detail-modal-body::-webkit-scrollbar-track{background:transparent}
+.detail-modal-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:4px}
+.detail-modal-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.18)}
+.detail-modal-summary{font-size:14px;line-height:1.85;color:var(--text-secondary)}
+.detail-modal-footer{padding:16px 28px 20px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border-color)}
+.detail-modal-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--primary);text-decoration:none;padding:8px 18px;border-radius:var(--radius-sm);background:var(--primary-light);transition:all var(--transition)}
+.detail-modal-link:hover{background:rgba(56,128,255,0.14)}
+.detail-modal-fav{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--text-secondary);padding:8px 18px;border-radius:var(--radius-sm);background:var(--bg-page);border:1px solid var(--border-color);cursor:pointer;transition:all var(--transition)}
+.detail-modal-fav:hover{border-color:var(--primary);color:var(--primary)}
+.detail-modal-fav.is-fav{color:#f59e0b;border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.06)}
+.detail-modal-fav svg{width:16px;height:16px}
+
+.fav-dropdown{position:fixed;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:8px;z-index:260;display:none;max-height:240px;overflow-y:auto;width:200px}
+.fav-dropdown::-webkit-scrollbar{width:4px}.fav-dropdown::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:4px}
+.fav-dropdown.show{display:block}
+.fav-dropdown-item{padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text-secondary);transition:all var(--transition);display:flex;align-items:center;gap:6px}
+.fav-dropdown-item:hover{background:var(--primary-light);color:var(--primary)}
+.fav-dropdown-item .fav-check{color:var(--primary);font-weight:700}
+.fav-dropdown-add{padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--primary);font-weight:600;border-top:1px solid var(--border-color);margin-top:4px;display:flex;align-items:center;gap:6px;transition:background var(--transition)}
+.fav-dropdown-add:hover{background:var(--primary-light)}
+.fav-dropdown-input{width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:13px;outline:none;margin-top:4px}
+.fav-dropdown-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(56,128,255,0.1)}
+
+.fav-panel{position:fixed;bottom:0;left:0;right:0;z-index:201;max-height:85vh;background:var(--bg-surface);border-top:1px solid var(--border-color);border-radius:20px 20px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,0.12);transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column}
+.fav-panel.visible{transform:translateY(0)}
+.fav-handle{width:36px;height:4px;border-radius:2px;background:var(--border-color);margin:10px auto 0;flex-shrink:0}
+.fav-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 12px;flex-shrink:0}
+.fav-header h2{font-size:17px;font-weight:700;color:var(--text-primary);letter-spacing:-0.02em}
+.fav-close{background:var(--bg-page);border:1px solid var(--border-color);color:var(--text-secondary);font-size:18px;cursor:pointer;padding:6px 12px;border-radius:var(--radius-sm);line-height:1;transition:all var(--transition)}
+.fav-close:hover{background:var(--border-color);color:var(--text-primary)}
+.fav-body{overflow-y:auto;padding:8px 24px 28px;flex:1}
+.fav-folder{margin-bottom:16px}
+.fav-folder-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer}
+.fav-folder-name{font-size:14px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px}
+.fav-folder-count{font-size:12px;color:var(--text-tertiary);font-weight:400}
+.fav-folder-del{background:none;border:none;color:var(--text-tertiary);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px;transition:all var(--transition)}
+.fav-folder-del:hover{color:#ef4444;background:rgba(239,68,68,0.06)}
+.fav-item{padding:12px 14px;margin-bottom:6px;background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);transition:all var(--transition)}
+.fav-item:hover{border-color:var(--primary)}
+.fav-item-title{font-size:13px;font-weight:600;color:var(--text-primary);line-height:1.5;margin-bottom:4px}
+.fav-item-meta{font-size:11px;color:var(--text-tertiary);display:flex;align-items:center;gap:6px}
+.fav-item-remove{background:none;border:none;color:var(--text-tertiary);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:4px;transition:all var(--transition)}
+.fav-item-remove:hover{color:#ef4444;background:rgba(239,68,68,0.06)}
+.fav-empty{text-align:center;padding:32px;color:var(--text-tertiary);font-size:13px}
+.fav-add-folder{display:flex;gap:8px;padding:12px 0}
+.fav-add-input{flex:1;padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:13px;outline:none}
+.fav-add-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(56,128,255,0.1)}
+.fav-add-btn{background:var(--primary);border:none;color:#fff;padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.fav-add-btn:hover{background:#2c6ce0}
+
+.archive-panel{position:fixed;bottom:0;left:0;right:0;z-index:201;max-height:85vh;background:var(--bg-surface);border-top:1px solid var(--border-color);border-radius:20px 20px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,0.12);transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column}
+.archive-panel.visible{transform:translateY(0)}
+.archive-handle{width:36px;height:4px;border-radius:2px;background:var(--border-color);margin:10px auto 0;flex-shrink:0}
+.archive-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 12px;flex-shrink:0}
+.archive-header h2{font-size:17px;font-weight:700;color:var(--text-primary);letter-spacing:-0.02em}
+.archive-close{background:var(--bg-page);border:1px solid var(--border-color);color:var(--text-secondary);font-size:18px;cursor:pointer;padding:6px 12px;border-radius:var(--radius-sm);line-height:1;transition:all var(--transition)}
+.archive-close:hover{background:var(--border-color);color:var(--text-primary)}
+.archive-body{overflow-y:auto;padding:8px 24px 28px;flex:1}
+.archive-item{padding:16px 18px;margin-bottom:8px;background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)}
+.archive-item:hover{border-color:var(--primary);box-shadow:var(--shadow-sm)}
+.archive-item-date{font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text-primary)}
+.archive-item-title{font-size:13px;color:var(--text-secondary);line-height:1.55}
+
+.daily-view{position:fixed;inset:0;z-index:210;background:var(--bg-surface);overflow-y:auto;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)}
+.daily-view.visible{transform:translateX(0)}
+.daily-header{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--bg-surface);border-bottom:1px solid var(--border-color)}
+.daily-back{background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:7px 14px;color:var(--text-secondary);cursor:pointer;font-size:13px;font-weight:500;transition:all var(--transition);display:flex;align-items:center;gap:4px}
+.daily-back:hover{border-color:var(--primary);color:var(--primary)}
+.daily-title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-0.02em}
+.daily-content{max-width:1200px;margin:0 auto;padding:0 24px 80px}
+.daily-lead{padding:20px;margin-bottom:24px;background:linear-gradient(135deg,rgba(56,128,255,0.06),rgba(88,86,214,0.06));border:1px solid rgba(56,128,255,0.12);border-radius:var(--radius-lg)}
+.daily-lead h3{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--primary)}
+.daily-lead p{font-size:13px;line-height:1.75;color:var(--text-secondary)}
+.daily-section{margin-bottom:28px}
+.daily-section-title{font-size:12px;font-weight:700;padding:8px 0 12px;margin-bottom:8px;color:var(--text-tertiary);letter-spacing:0.05em;text-transform:uppercase;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:8px}
+.daily-item{padding:16px 18px;margin-bottom:8px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:box-shadow var(--transition)}
+.daily-item:hover{box-shadow:var(--shadow-md)}
+.daily-item-title{font-size:14px;font-weight:600;line-height:1.55;margin-bottom:6px;color:var(--text-primary)}
+.daily-item-summary{font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:8px}
+.daily-item-link{font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.daily-item-link:hover{text-decoration:underline}
+.daily-flash{padding:10px 16px;margin-bottom:6px;background:var(--bg-page);border-radius:var(--radius-sm);font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;border-left:3px solid var(--primary)}
+.daily-flash-source{color:var(--text-tertiary);font-size:12px}
+
+.offline-notice{position:fixed;top:0;left:0;right:0;z-index:300;padding:10px;text-align:center;font-size:12px;font-weight:500;background:#fef2f2;color:#dc2626;border-bottom:1px solid #fecaca;transform:translateY(-100%);transition:transform 0.25s}
+.offline-notice.visible{transform:translateY(0)}
+
+@media(max-width:1100px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){
+  .card-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{min-height:160px;padding:18px 16px 14px}.card-icon{width:38px;height:38px;top:12px;right:12px}.card-icon svg{width:19px;height:19px}.card-title{font-size:13.5px}
+  .header{padding:0 16px}.header-inner{height:56px}.search-wrap{max-width:none}.logo-sub{display:none}.refresh-indicator{display:none}
+  .tab-bar{padding:0 16px}.tab{padding:12px 14px;font-size:13px}.content{padding:16px 16px 60px}
+  .detail-modal{width:96%;max-width:none;max-height:90vh;border-radius:var(--radius-md)}
+  .detail-modal-header{padding:20px 20px 0}.detail-modal-body{padding:12px 20px}.detail-modal-footer{padding:14px 20px 16px}
+  .detail-modal-title{font-size:16px}
+  .daily-banner{padding:20px 20px}.daily-banner-title{font-size:16px;max-width:100%}.daily-banner-arrow{display:none}
+}
+@media(max-width:420px){
+  .card-grid{grid-template-columns:1fr 1fr;gap:10px}.card{min-height:145px;padding:14px 12px 12px;border-radius:var(--radius-sm)}.card-title{font-size:12.5px;-webkit-line-clamp:2}.card-icon{width:34px;height:34px;border-radius:8px}.card-icon svg{width:17px;height:17px}.card-time{font-size:10.5px}.card-tag{font-size:9px;padding:2px 6px}
+}
+@media(prefers-reduced-motion:reduce){.card,.tab,.archive-item,.archive-panel,.daily-view,.detail-modal{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="offline-notice" id="offlineNotice">离线模式 — 数据可能不是最新</div>
+
+<header class="header"><div class="header-inner">
+  <div class="logo"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><span class="logo-text">AI HOT</span><span class="logo-sub">速览</span></div>
+  <div class="search-wrap"><span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><input class="search-input" id="searchInput" type="text" placeholder="搜索 AI 动态..." autocomplete="off" aria-label="搜索 AI 动态"><button class="search-clear" id="searchClear" aria-label="清除搜索">&times;</button></div>
+  <div class="refresh-indicator" id="refreshIndicator"><span class="refresh-dot" id="refreshDot"></span><span id="refreshText">加载中</span></div>
+  <button class="header-btn" id="favBtn" aria-label="我的收藏"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>收藏</button>
+  <button class="header-btn header-btn--primary" id="archiveBtn" aria-label="日报存档"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>存档</button>
+</div></header>
+
+<nav class="tab-bar" id="tabBar" role="tablist" aria-label="分类导航">
+  <button class="tab active" data-cat="all" role="tab" aria-selected="true">全部</button>
+  <button class="tab" data-cat="daily" role="tab" aria-selected="false">今日日报</button>
+  <button class="tab" data-cat="ai-models" role="tab" aria-selected="false">模型发布</button>
+  <button class="tab" data-cat="ai-products" role="tab" aria-selected="false">产品发布</button>
+  <button class="tab" data-cat="industry" role="tab" aria-selected="false">行业动态</button>
+  <button class="tab" data-cat="paper" role="tab" aria-selected="false">论文研究</button>
+  <button class="tab" data-cat="tip" role="tab" aria-selected="false">技巧与观点</button>
+</nav>
+
+<main class="content" id="content"><div class="loading" id="loading"><div class="loading-spinner"></div>加载中...</div></main>
+
+<div class="overlay" id="overlay"></div>
+<div class="fav-dropdown" id="favDropdown"></div>
+
+<div class="detail-modal" id="detailModal">
+  <div class="detail-modal-header">
+    <div><div class="detail-modal-cat" id="detailCat"></div><div class="detail-modal-title" id="detailTitle"></div></div>
+    <button class="detail-modal-close" id="detailClose" aria-label="关闭">&times;</button>
+  </div>
+  <div class="detail-modal-meta" id="detailMeta"></div>
+  <div class="detail-modal-body" id="detailBody"></div>
+  <div class="detail-modal-footer">
+    <a class="detail-modal-link" id="detailLink" href="#" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      查看原文
+    </a>
+    <div>
+      <button class="detail-modal-fav" id="detailFav" aria-label="收藏">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+        <span id="detailFavText">收藏</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="fav-panel" id="favPanel">
+  <div class="fav-handle"></div>
+  <div class="fav-header"><h2>我的收藏</h2><button class="fav-close" id="favClose" aria-label="关闭收藏">&times;</button></div>
+  <div class="fav-body" id="favBody"></div>
+</div>
+
+<div class="archive-panel" id="archivePanel">
+  <div class="archive-handle"></div>
+  <div class="archive-header"><h2>日报存档</h2><button class="archive-close" id="archiveClose" aria-label="关闭存档">&times;</button></div>
+  <div class="archive-body" id="archiveBody"><div class="loading"><div class="loading-spinner"></div>加载中...</div></div>
+</div>
+
+<div class="daily-view" id="dailyView">
+  <div class="daily-header"><button class="daily-back" id="dailyBack" aria-label="返回"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>返回</button><div class="daily-title" id="dailyTitle"></div></div>
+  <div class="daily-content" id="dailyContent"></div>
+</div>
+
+<script>
+const REFRESH_INTERVAL = 5 * 60 * 1000;
+const DAILY_BJT_HOUR = 8;
+
+const CAT_ICONS = {
+  'ai-models': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
+  'ai-products': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.5-.5 5-2c1.5 1.26 2 5 2 5s3.5-.5 5-2c1.5 1.26 2 5 2 5s3.5-.5 5-2"/><path d="M12 12V3l8 4.5"/><circle cx="12" cy="12" r="2"/></svg>',
+  'industry': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>',
+  'paper': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  'tip': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17h-8v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z"/></svg>'
+};
+const CATEGORY_MAP = {
+  'ai-models': { label: '模型发布', cls: 'cat-ai-models', sls: 'sl-ai-models', cardClass: 'card--model', tagLabel: 'MODEL', catColor: 'rgba(56,128,255,0.12)', catText: '#3880ff' },
+  'ai-products': { label: '产品发布', cls: 'cat-ai-products', sls: 'sl-ai-products', cardClass: 'card--product', tagLabel: 'PRODUCT', catColor: 'rgba(139,92,246,0.12)', catText: '#8b5cf6' },
+  'industry': { label: '行业动态', cls: 'cat-industry', sls: 'sl-industry', cardClass: 'card--industry', tagLabel: 'NEWS', catColor: 'rgba(6,182,212,0.12)', catText: '#06b6d4' },
+  'paper': { label: '论文研究', cls: 'cat-paper', sls: 'sl-paper', cardClass: 'card--paper', tagLabel: 'PAPER', catColor: 'rgba(16,185,129,0.12)', catText: '#10b981' },
+  'tip': { label: '技巧与观点', cls: 'cat-tip', sls: 'sl-tip', cardClass: 'card--tip', tagLabel: 'TIP', catColor: 'rgba(244,63,94,0.12)', catText: '#f43f5e' },
+};
+const CATEGORY_ORDER = ['ai-models', 'ai-products', 'industry', 'paper', 'tip'];
+const SECTION_TO_CAT = {'模型发布/更新':'ai-models','产品发布/更新':'ai-products','行业动态':'industry','论文研究':'paper','技巧与观点':'tip'};
+
+let allItems = [], currentCat = 'all', nextCursor = null, isLoading = false, isSearchMode = false, dailiesCache = null;
+let currentItem = null;
+let todayDaily = null, todayDailyDate = null;
+let lastRefreshTime = 0, refreshTimer = null;
+
+const $content = document.getElementById('content'), $loading = document.getElementById('loading');
+const $searchInput = document.getElementById('searchInput'), $searchClear = document.getElementById('searchClear');
+const $tabBar = document.getElementById('tabBar'), $overlay = document.getElementById('overlay');
+const $archivePanel = document.getElementById('archivePanel'), $archiveBody = document.getElementById('archiveBody');
+const $archiveBtn = document.getElementById('archiveBtn'), $archiveClose = document.getElementById('archiveClose');
+const $dailyView = document.getElementById('dailyView'), $dailyTitle = document.getElementById('dailyTitle');
+const $dailyContent = document.getElementById('dailyContent'), $dailyBack = document.getElementById('dailyBack');
+const $offlineNotice = document.getElementById('offlineNotice');
+const $detailModal = document.getElementById('detailModal'), $detailClose = document.getElementById('detailClose');
+const $detailTitle = document.getElementById('detailTitle'), $detailCat = document.getElementById('detailCat');
+const $detailMeta = document.getElementById('detailMeta'), $detailBody = document.getElementById('detailBody');
+const $detailLink = document.getElementById('detailLink'), $detailFav = document.getElementById('detailFav');
+const $detailFavText = document.getElementById('detailFavText'), $favDropdown = document.getElementById('favDropdown');
+const $favBtn = document.getElementById('favBtn'), $favPanel = document.getElementById('favPanel');
+const $favClose = document.getElementById('favClose'), $favBody = document.getElementById('favBody');
+const $refreshDot = document.getElementById('refreshDot'), $refreshText = document.getElementById('refreshText');
+
+function cacheGet(key) { try { const r = localStorage.getItem(key); if (!r) return null; const {data,ts} = JSON.parse(r); return {data, age: Date.now()-ts}; } catch { return null; } }
+function cacheSet(key, data) { try { localStorage.setItem(key, JSON.stringify({data, ts:Date.now()})); } catch {} }
+
+const API_ENDPOINTS = [
+  { name: 'proxy', prefix: '/api/public' },
+  { name: 'direct', prefix: 'https://aihot.virxact.com/api/public' },
+];
+let activeEndpoint = null;
+let endpointDebug = [];
+
+async function probeEndpoint(ep) {
+  const url = ep.prefix + '/items?mode=selected&take=1';
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (r.ok) {
+      const d = await r.json();
+      if (d.items) {
+        endpointDebug.push(`${ep.name}: OK`);
+        return true;
+      }
+    }
+    endpointDebug.push(`${ep.name}: HTTP ${r.status}`);
+  } catch (e) {
+    endpointDebug.push(`${ep.name}: ${e.name || e.message}`);
+  }
+  return false;
+}
+
+async function detectEndpoint() {
+  if (activeEndpoint) return activeEndpoint;
+  endpointDebug = [];
+  const saved = localStorage.getItem('aihot_ep');
+  if (saved) {
+    try {
+      const ep = JSON.parse(saved);
+      if (await probeEndpoint(ep)) { activeEndpoint = ep; return ep; }
+    } catch {}
+    localStorage.removeItem('aihot_ep');
+  }
+  for (const ep of API_ENDPOINTS) {
+    if (await probeEndpoint(ep)) {
+      activeEndpoint = ep;
+      try { localStorage.setItem('aihot_ep', JSON.stringify(ep)); } catch {}
+      return ep;
+    }
+  }
+  endpointDebug.push('All endpoints failed');
+  return null;
+}
+
+async function apiFetch(path) {
+  const ep = await detectEndpoint();
+  if (!ep) throw new Error('No API endpoint available: ' + endpointDebug.join('; '));
+  const url = ep.prefix + path;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) {
+      if (r.status === 404 || r.status === 403 || r.status === 502) {
+        activeEndpoint = null;
+        localStorage.removeItem('aihot_ep');
+        const ep2 = await detectEndpoint();
+        if (ep2 && ep2 !== ep) {
+          const r2 = await fetch(ep2.prefix + path);
+          if (r2.ok) return r2.json();
+        }
+      }
+      throw new Error(`API ${r.status} at ${ep.name}`);
+    }
+    return r.json();
+  } catch (e) {
+    if (e.message.startsWith('API ') || e.message.startsWith('No API')) throw e;
+    activeEndpoint = null;
+    localStorage.removeItem('aihot_ep');
+    throw new Error(`Network error at ${ep.name}: ${e.message}`);
+  }
+}
+
+function getFavData() { try { return JSON.parse(localStorage.getItem('aihot_fav') || '{"folders":{}}'); } catch { return {folders:{}}; } }
+function setFavData(d) { try { localStorage.setItem('aihot_fav', JSON.stringify(d)); } catch {} }
+function isItemFaved(id) { const d = getFavData(); for (const f of Object.values(d.folders)) { if (f.items.some(i => i.id === id)) return true; } return false; }
+function getItemFolders(id) { const d = getFavData(); const result = []; for (const [name, f] of Object.entries(d.folders)) { if (f.items.some(i => i.id === id)) result.push(name); } return result; }
+
+function timeAgo(iso) { if (!iso) return ''; const d = new Date(iso), now = new Date(), diff = (now-d)/1000; if (diff<60) return '刚刚'; if (diff<3600) return Math.floor(diff/60)+' 分钟前'; if (diff<86400) return Math.floor(diff/3600)+' 小时前'; if (diff<172800) return '昨天'; return `${d.getMonth()+1}/${d.getDate()}`; }
+function formatDateCN(ds) { const d=new Date(ds+'T00:00:00Z'); const w=['周日','周一','周二','周三','周四','周五','周六']; return `${d.getUTCMonth()+1}月${d.getUTCDate()}日 · ${w[d.getUTCDay()]}`; }
+
+function getTodayBJTDate() {
+  const now = new Date();
+  const utcH = now.getUTCHours();
+  const bjtH = (utcH + 8) % 24;
+  const bjtOffset = 8 * 60 * 60 * 1000;
+  const bjtNow = new Date(now.getTime() + bjtOffset);
+  const y = bjtNow.getUTCFullYear(), m = String(bjtNow.getUTCMonth()+1).padStart(2,'0'), dd = String(bjtNow.getUTCDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
+function updateRefreshIndicator() {
+  if (!lastRefreshTime) {
+    $refreshDot.className = 'refresh-dot stale';
+    $refreshText.textContent = '加载中';
+    return;
+  }
+  const age = Date.now() - lastRefreshTime;
+  $refreshDot.className = age > REFRESH_INTERVAL * 2 ? 'refresh-dot stale' : 'refresh-dot';
+  if (age < 60000) $refreshText.textContent = '刚刚更新';
+  else if (age < 3600000) $refreshText.textContent = Math.floor(age/60000) + ' 分钟前更新';
+  else $refreshText.textContent = Math.floor(age/3600000) + ' 小时前更新';
+}
+
+function renderCard(item, index) {
+  const cat = item.category || '', info = CATEGORY_MAP[cat] || {cardClass:'card--default',tagLabel:'AI'};
+  const time = timeAgo(item.publishedAt), delay = Math.min(index * 25, 400);
+  return `<div class="card ${info.cardClass}" data-id="${item.id}" onclick="openDetail('${item.id}')" style="animation-delay:${delay}ms">
+    <div class="card-icon">${CAT_ICONS[cat] || CAT_ICONS['tip']}</div>
+    <div class="card-body"><div class="card-title">${escHtml(item.title)}</div>
+    <div class="card-footer"><span class="card-tag">${info.tagLabel}</span><span class="card-time">${time}</span></div></div></div>`;
+}
+
+function renderDailyBanner() {
+  if (!todayDaily || currentCat !== 'all') return '';
+  const d = todayDaily;
+  let totalItems = 0;
+  if (d.sections) d.sections.forEach(s => totalItems += (s.items?.length || 0));
+  if (d.flashes) totalItems += d.flashes.length;
+  const leadTitle = d.lead?.title || 'AI HOT 日报';
+  const dateLabel = formatDateCN(d.date);
+  return `<div class="daily-banner" onclick="openDaily('${d.date}')">
+    <div class="daily-banner-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>今日日报 · ${dateLabel}</div>
+    <div class="daily-banner-title">${escHtml(leadTitle)}</div>
+    <div class="daily-banner-meta"><span class="daily-banner-count">${totalItems} 条动态</span><span>点击查看完整日报</span></div>
+    <div class="daily-banner-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>`;
+}
+
+function openDetail(id) {
+  const item = allItems.find(i => i.id === id);
+  if (!item) return;
+  currentItem = item;
+  const cat = item.category || '', info = CATEGORY_MAP[cat] || {tagLabel:'AI', catColor:'rgba(100,116,139,0.12)', catText:'#64748b'};
+  $detailCat.textContent = info.tagLabel;
+  $detailCat.style.background = info.catColor;
+  $detailCat.style.color = info.catText;
+  $detailTitle.textContent = item.title;
+  $detailMeta.innerHTML = `${escHtml(item.source||'')} <span style="opacity:0.4">·</span> ${timeAgo(item.publishedAt)}`;
+  $detailBody.innerHTML = item.summary ? `<div class="detail-modal-summary">${escHtml(item.summary)}</div>` : '<div style="color:var(--text-tertiary);font-size:13px">暂无摘要</div>';
+  $detailLink.href = item.url || '#';
+  updateFavBtn();
+  $overlay.classList.add('visible');
+  $detailModal.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  $overlay.classList.remove('visible');
+  $detailModal.classList.remove('visible');
+  $favDropdown.classList.remove('show');
+  document.body.style.overflow = '';
+  currentItem = null;
+}
+
+function updateFavBtn() {
+  if (!currentItem) return;
+  const faved = isItemFaved(currentItem.id);
+  $detailFav.classList.toggle('is-fav', faved);
+  $detailFavText.textContent = faved ? '已收藏' : '收藏';
+  if (faved) {
+    $detailFav.querySelector('svg').setAttribute('fill', 'currentColor');
+  } else {
+    $detailFav.querySelector('svg').setAttribute('fill', 'none');
+  }
+}
+
+$detailFav.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if ($favDropdown.classList.contains('show')) {
+    $favDropdown.classList.remove('show');
+    return;
+  }
+  renderFavDropdown();
+  const rect = $detailFav.getBoundingClientRect();
+  const dropdownH = $favDropdown.offsetHeight || 200;
+  let top = rect.bottom + 6;
+  let left = rect.left;
+  if (top + dropdownH > window.innerHeight - 12) {
+    top = rect.top - dropdownH - 6;
+  }
+  if (left + 200 > window.innerWidth - 12) {
+    left = window.innerWidth - 212;
+  }
+  if (left < 12) left = 12;
+  $favDropdown.style.top = top + 'px';
+  $favDropdown.style.left = left + 'px';
+  $favDropdown.classList.add('show');
+});
+
+function renderFavDropdown() {
+  if (!currentItem) return;
+  const data = getFavData();
+  const folders = Object.keys(data.folders);
+  const itemFolders = getItemFolders(currentItem.id);
+  let html = '';
+  if (folders.length === 0) {
+    html = '<div style="padding:8px 12px;font-size:12px;color:var(--text-tertiary)">还没有收藏夹，创建一个吧</div>';
+  } else {
+    folders.forEach(name => {
+      const inFolder = itemFolders.includes(name);
+      html += `<div class="fav-dropdown-item" onclick="toggleFavFolder('${escAttr(name)}')">${inFolder ? '<span class="fav-check">✓</span>' : '<span style="width:14px;display:inline-block"></span>'}${escHtml(name)}</div>`;
+    });
+  }
+  html += `<div class="fav-dropdown-add" onclick="showAddFolderInput()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新建收藏夹</div>`;
+  $favDropdown.innerHTML = html;
+}
+
+function showAddFolderInput() {
+  const existing = $favDropdown.querySelector('.fav-dropdown-input');
+  if (existing) { existing.focus(); return; }
+  const div = document.createElement('div');
+  div.style.padding = '4px 0';
+  div.innerHTML = '<input class="fav-dropdown-input" placeholder="输入收藏夹名称..." maxlength="20">';
+  $favDropdown.appendChild(div);
+  const input = div.querySelector('input');
+  input.focus();
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { const name = input.value.trim(); if (name) { addFavFolder(name); } }
+    if (e.key === 'Escape') { $favDropdown.classList.remove('show'); }
+  });
+  input.addEventListener('blur', () => { setTimeout(() => { if (!input.value.trim()) $favDropdown.classList.remove('show'); }, 150); });
+}
+
+function addFavFolder(name) {
+  const data = getFavData();
+  if (!data.folders[name]) { data.folders[name] = { items: [] }; setFavData(data); }
+  toggleFavFolder(name);
+}
+
+function toggleFavFolder(folderName) {
+  if (!currentItem) return;
+  const data = getFavData();
+  if (!data.folders[folderName]) data.folders[folderName] = { items: [] };
+  const idx = data.folders[folderName].items.findIndex(i => i.id === currentItem.id);
+  if (idx >= 0) {
+    data.folders[folderName].items.splice(idx, 1);
+  } else {
+    data.folders[folderName].items.push({ id: currentItem.id, title: currentItem.title, url: currentItem.url, source: currentItem.source, category: currentItem.category, publishedAt: currentItem.publishedAt, savedAt: new Date().toISOString() });
+  }
+  setFavData(data);
+  updateFavBtn();
+  renderFavDropdown();
+  const rect = $detailFav.getBoundingClientRect();
+  const dropdownH = $favDropdown.offsetHeight || 200;
+  let top = rect.bottom + 6;
+  if (top + dropdownH > window.innerHeight - 12) top = rect.top - dropdownH - 6;
+  $favDropdown.style.top = top + 'px';
+}
+
+$favBtn.addEventListener('click', openFavPanel);
+$favClose.addEventListener('click', closeFavPanel);
+
+function openFavPanel() {
+  $overlay.classList.add('visible');
+  $favPanel.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+  renderFavPanel();
+}
+function closeFavPanel() {
+  $overlay.classList.remove('visible');
+  $favPanel.classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function renderFavPanel() {
+  const data = getFavData();
+  const folders = Object.entries(data.folders);
+  let html = '<div class="fav-add-folder"><input class="fav-add-input" id="newFolderInput" placeholder="新建收藏夹名称..." maxlength="20"><button class="fav-add-btn" onclick="createFolderFromPanel()">创建</button></div>';
+  if (folders.length === 0) {
+    html += '<div class="fav-empty">还没有收藏夹<br>点击上方创建一个收藏夹，然后在新闻详情中收藏文章</div>';
+  } else {
+    folders.forEach(([name, folder]) => {
+      html += `<div class="fav-folder"><div class="fav-folder-header"><span class="fav-folder-name"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>${escHtml(name)}<span class="fav-folder-count">(${folder.items.length})</span></span><button class="fav-folder-del" onclick="deleteFolder('${escAttr(name)}')">删除</button></div>`;
+      if (folder.items.length === 0) {
+        html += '<div style="padding:4px 0 8px;font-size:12px;color:var(--text-tertiary)">暂无收藏</div>';
+      } else {
+        folder.items.forEach(item => {
+          html += `<div class="fav-item"><div class="fav-item-title">${escHtml(item.title)}</div><div class="fav-item-meta">${escHtml(item.source||'')} · ${timeAgo(item.publishedAt)}<button class="fav-item-remove" onclick="removeFavItem('${escAttr(name)}','${item.id}')">移除</button></div></div>`;
+        });
+      }
+      html += '</div>';
+    });
+  }
+  $favBody.innerHTML = html;
+}
+
+function createFolderFromPanel() {
+  const input = document.getElementById('newFolderInput');
+  const name = input.value.trim();
+  if (!name) return;
+  const data = getFavData();
+  if (!data.folders[name]) { data.folders[name] = { items: [] }; setFavData(data); }
+  renderFavPanel();
+}
+
+function deleteFolder(name) {
+  const data = getFavData();
+  delete data.folders[name];
+  setFavData(data);
+  renderFavPanel();
+}
+
+function removeFavItem(folderName, itemId) {
+  const data = getFavData();
+  if (data.folders[folderName]) {
+    data.folders[folderName].items = data.folders[folderName].items.filter(i => i.id !== itemId);
+    setFavData(data);
+    renderFavPanel();
+  }
+}
+
+$detailClose.addEventListener('click', closeDetail);
+$overlay.addEventListener('click', () => { closeDetail(); closeArchive(); closeFavPanel(); });
+document.addEventListener('click', (e) => { if (!e.target.closest('#favDropdown') && !e.target.closest('#detailFav')) $favDropdown.classList.remove('show'); });
+
+function renderItems(items, cat) {
+  if (!items.length) return `<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div><div class="empty-state-text">暂无内容<br>试试切换分类或稍后刷新</div></div>`;
+  if (cat === 'all') {
+    const g={};CATEGORY_ORDER.forEach(c=>g[c]=[]);items.forEach(i=>{const c=i.category||'tip';if(!g[c])g[c]=[];g[c].push(i)});
+    let html=''; let idx=0;
+    CATEGORY_ORDER.forEach(c=>{if(g[c]?.length){const info=CATEGORY_MAP[c];html+=`<div class="section-label ${info.sls}">${info.label}</div>`;g[c].forEach(i=>{html+=renderCard(i,idx++)})}});
+    return `<div class="card-grid">${html}</div>`;
+  }
+  return `<div class="card-grid">${items.map((i,n)=>renderCard(i,n)).join('')}</div>`;
+}
+
+function renderDailyTab() {
+  if (!todayDaily) {
+    return '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="empty-state-text">今日日报尚未生成<br>每天北京时间 08:00 自动更新</div></div>';
+  }
+  const d = todayDaily;
+  let html = '';
+  if (d.lead?.leadParagraph) {
+    html += `<div class="daily-lead"><h3>${escHtml(d.lead.title||'主编点评')}</h3><p>${escHtml(d.lead.leadParagraph)}</p></div>`;
+  }
+  if (d.sections) {
+    d.sections.forEach(s => {
+      const cat = SECTION_TO_CAT[s.label] || '';
+      const info = CATEGORY_MAP[cat];
+      const labelExtra = info ? `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${info.catText};margin-right:4px"></span>` : '';
+      html += `<div class="daily-section"><div class="daily-section-title">${labelExtra}${escHtml(s.label)}</div>`;
+      s.items?.forEach(i => {
+        html += `<div class="daily-item"><div class="daily-item-title">${escHtml(i.title)}</div>${i.summary?`<div class="daily-item-summary">${escHtml(i.summary)}</div>`:''}<a class="daily-item-link" href="${escAttr(i.sourceUrl)}" target="_blank" rel="noopener"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${escHtml(i.sourceName||'查看原文')}</a></div>`;
+      });
+      html += '</div>';
+    });
+  }
+  if (d.flashes?.length) {
+    html += '<div class="daily-section"><div class="daily-section-title">快讯</div>';
+    d.flashes.forEach(f => {
+      html += `<div class="daily-flash">${escHtml(f.title)}<span class="daily-flash-source">${escHtml(f.sourceName||'')} ${timeAgo(f.publishedAt)}</span></div>`;
+    });
+    html += '</div>';
+  }
+  return html;
+}
+
+function getFilteredItems() { return currentCat==='all' ? allItems : allItems.filter(i=>i.category===currentCat); }
+function renderContent() {
+  if (currentCat === 'daily') {
+    const dateLabel = todayDaily ? formatDateCN(todayDaily.date) : '今日';
+    let html = `<div class="status-bar"><span>AI HOT 日报 · ${dateLabel}</span></div>`;
+    html += renderDailyTab();
+    $content.innerHTML = html;
+    return;
+  }
+  const items=getFilteredItems(), count=items.length;
+  const catLabel=currentCat==='all'?'全部精选':(CATEGORY_MAP[currentCat]?.label||'');
+  let html=`<div class="status-bar"><span>${catLabel} · 共 ${count} 条</span>${nextCursor&&currentCat==='all'?'<a class="see-all" onclick="if(!isLoading)loadMore()">加载更多 &rarr;</a>':''}</div>`;
+  html += renderDailyBanner();
+  html+=renderItems(items,currentCat);
+  if(nextCursor&&currentCat==='all')html+=`<div class="load-more"><button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">加载更多</button></div>`;
+  $content.innerHTML=html;
+}
+
+async function loadTodayDaily() {
+  const todayBJT = getTodayBJTDate();
+  const ck = 'aihot_daily_' + todayBJT;
+  const c = cacheGet(ck);
+  if (c && c.age < 30 * 60 * 1000 && c.data?.date === todayBJT) {
+    todayDaily = c.data;
+    todayDailyDate = todayBJT;
+    return;
+  }
+  try {
+    const d = await apiFetch(`/daily`);
+    if (d && d.date) {
+      todayDaily = d;
+      todayDailyDate = d.date;
+      cacheSet(ck, d);
+    }
+  } catch {
+    if (c?.data) {
+      todayDaily = c.data;
+      todayDailyDate = c.data.date;
+    }
+  }
+}
+
+async function loadItems(useCache=true) {
+  isLoading=true;
+  if (!allItems.length) $content.innerHTML='<div class="loading"><div class="loading-spinner"></div>加载中...</div>';
+  const ck='aihot_items';
+  if(useCache){const c=cacheGet(ck);if(c&&c.age<5*60*1000){allItems=c.data.items||[];nextCursor=c.data.nextCursor||null;renderContent();isLoading=false;lastRefreshTime=Date.now();updateRefreshIndicator();return;}if(c){allItems=c.data.items||[];nextCursor=c.data.nextCursor||null;renderContent();}}
+  try{const d=await apiFetch(`/items?mode=selected&take=50`);allItems=d.items||[];nextCursor=d.nextCursor||null;cacheSet(ck,{items:allItems,nextCursor});renderContent();$offlineNotice.classList.remove('visible');lastRefreshTime=Date.now();updateRefreshIndicator()}
+  catch(e){if(!allItems.length)$content.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">加载失败<br><small>${escHtml(e.message)}</small><br><small style="color:var(--text-tertiary)">探测: ${endpointDebug.join(' | ')}</small></div></div>`;$offlineNotice.classList.add('visible');$refreshDot.className='refresh-dot error';$refreshText.textContent='连接失败'}
+  isLoading=false;
+}
+async function loadMore(){if(!nextCursor||isLoading)return;const b=document.getElementById('loadMoreBtn');if(b){b.disabled=true;b.textContent='加载中...';}isLoading=true;try{const d=await apiFetch(`/items?mode=selected&take=50&cursor=${encodeURIComponent(nextCursor)}`);allItems=allItems.concat(d.items||[]);nextCursor=d.nextCursor||null;renderContent()}catch{}isLoading=false;}
+
+async function silentRefresh() {
+  if (isLoading) return;
+  try {
+    const [itemsData, dailyData] = await Promise.all([
+      apiFetch(`/items?mode=selected&take=50`),
+      apiFetch(`/daily`).catch(() => null)
+    ]);
+    allItems = itemsData.items || [];
+    nextCursor = itemsData.nextCursor || null;
+    cacheSet('aihot_items', {items: allItems, nextCursor});
+    if (dailyData?.date) {
+      todayDaily = dailyData;
+      todayDailyDate = dailyData.date;
+      cacheSet('aihot_daily_' + dailyData.date, dailyData);
+    }
+    renderContent();
+    lastRefreshTime = Date.now();
+    updateRefreshIndicator();
+    $offlineNotice.classList.remove('visible');
+  } catch {
+    $refreshDot.className = 'refresh-dot error';
+    $refreshText.textContent = '刷新失败';
+  }
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    silentRefresh();
+  }, REFRESH_INTERVAL);
+  setInterval(updateRefreshIndicator, 30000);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const age = Date.now() - lastRefreshTime;
+    if (age > REFRESH_INTERVAL) {
+      silentRefresh();
+    }
+    updateRefreshIndicator();
+  }
+});
+
+$tabBar.addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t||isSearchMode)return;document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false')});t.classList.add('active');t.setAttribute('aria-selected','true');currentCat=t.dataset.cat;renderContent();});
+
+let searchTimer=null;
+$searchInput.addEventListener('input',()=>{const q=$searchInput.value.trim();$searchClear.classList.toggle('visible',q.length>0);clearTimeout(searchTimer);if(q.length===0){exitSearch();return}if(q.length<2)return;searchTimer=setTimeout(()=>doSearch(q),400);});
+$searchInput.addEventListener('keydown',e=>{if(e.key==='Escape'){$searchInput.value='';$searchClear.classList.remove('visible');exitSearch()}});
+$searchClear.addEventListener('click',()=>{$searchInput.value='';$searchClear.classList.remove('visible');exitSearch()});
+
+async function doSearch(q){isSearchMode=true;$content.innerHTML='<div class="loading"><div class="loading-spinner"></div>搜索中...</div>';document.querySelectorAll('.tab').forEach(t=>t.style.opacity='0.4');const ck='aihot_search_'+q,c=cacheGet(ck);if(c&&c.age<10*60*1000){const items=c.data.items||[];$content.innerHTML=`<div class="status-bar"><span>搜索"${escHtml(q)}" · 共 ${items.length} 条</span></div>`+renderItems(items,'all');return}try{const d=await apiFetch(`/items?q=${encodeURIComponent(q)}&take=30`);const items=d.items||[];cacheSet(ck,d);$content.innerHTML=`<div class="status-bar"><span>搜索"${escHtml(q)}" · 共 ${items.length} 条</span></div>`+renderItems(items,'all')}catch{$content.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">搜索失败，请重试</div></div>`}}
+function exitSearch(){isSearchMode=false;document.querySelectorAll('.tab').forEach(t=>t.style.opacity='1');renderContent()}
+
+$archiveBtn.addEventListener('click',openArchive);$archiveClose.addEventListener('click',closeArchive);
+async function openArchive(){$overlay.classList.add('visible');$archivePanel.classList.add('visible');document.body.style.overflow='hidden';if(dailiesCache){renderDailies(dailiesCache);return}const ck='aihot_dailies',c=cacheGet(ck);if(c&&c.age<30*60*1000){dailiesCache=c.data.items||[];renderDailies(dailiesCache);return}$archiveBody.innerHTML='<div class="loading"><div class="loading-spinner"></div>加载中...</div>';try{const d=await apiFetch(`/dailies?take=14`);dailiesCache=d.items||[];cacheSet(ck,d);renderDailies(dailiesCache)}catch{$archiveBody.innerHTML='<div class="empty-state"><div class="empty-state-text">加载失败</div></div>'}}
+function renderDailies(items){if(!items?.length){$archiveBody.innerHTML='<div class="empty-state"><div class="empty-state-text">暂无日报存档</div></div>';return}$archiveBody.innerHTML=items.map(d=>`<div class="archive-item" tabindex="0" onclick="openDaily('${d.date}')" onkeydown="if(event.key==='Enter')openDaily('${d.date}')"><div class="archive-item-date">${formatDateCN(d.date)}</div><div class="archive-item-title">${escHtml(d.leadTitle||'无标题')}</div></div>`).join('')}
+function closeArchive(){$overlay.classList.remove('visible');$archivePanel.classList.remove('visible');document.body.style.overflow=''}
+
+async function openDaily(date){closeArchive();closeDetail();$dailyTitle.textContent=`AI HOT 日报 · ${formatDateCN(date)}`;$dailyContent.innerHTML='<div class="loading"><div class="loading-spinner"></div>加载中...</div>';$dailyView.classList.add('visible');document.body.style.overflow='hidden';const ck='aihot_daily_'+date,c=cacheGet(ck);if(c&&c.age<2*3600*1000){renderDailyView(c.data);return}try{const d=await apiFetch(`/daily/${date}`);cacheSet(ck,d);renderDailyView(d)}catch{$dailyContent.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">加载失败</div></div>`}}
+function renderDailyView(data){let html='';if(data.lead?.leadParagraph)html+=`<div class="daily-lead"><h3>${escHtml(data.lead.title||'主编点评')}</h3><p>${escHtml(data.lead.leadParagraph)}</p></div>`;if(data.sections)data.sections.forEach(s=>{html+=`<div class="daily-section"><div class="daily-section-title">${escHtml(s.label)}</div>`;s.items?.forEach(i=>{html+=`<div class="daily-item"><div class="daily-item-title">${escHtml(i.title)}</div>${i.summary?`<div class="daily-item-summary">${escHtml(i.summary)}</div>`:''}<a class="daily-item-link" href="${escAttr(i.sourceUrl)}" target="_blank" rel="noopener"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${escHtml(i.sourceName||'查看原文')}</a></div>`});html+='</div>';});if(data.flashes?.length){html+='<div class="daily-section"><div class="daily-section-title">快讯</div>';data.flashes.forEach(f=>{html+=`<div class="daily-flash">${escHtml(f.title)}<span class="daily-flash-source">${escHtml(f.sourceName||'')} ${timeAgo(f.publishedAt)}</span></div>`});html+='</div>'}$dailyContent.innerHTML=html||'<div class="empty-state"><div class="empty-state-text">该日期暂无日报内容</div></div>'}
+
+$dailyBack.addEventListener('click',()=>{$dailyView.classList.remove('visible');document.body.style.overflow=''});
+function escHtml(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function escAttr(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeArchive();closeFavPanel()}});
+
+async function init() {
+  updateRefreshIndicator();
+  if (location.protocol === 'file:') {
+    $content.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">请通过本地服务器访问此页面<br><br><strong>启动方式：</strong><br>在当前目录运行 <code style="background:var(--bg-page);padding:2px 8px;border-radius:4px;font-size:13px">python server.py</code><br>然后浏览器打开 <a href="http://localhost:8080" style="color:var(--primary);font-weight:600">http://localhost:8080</a></div></div>`;
+    $refreshDot.className = 'refresh-dot error';
+    $refreshText.textContent = '未连接';
+    return;
+  }
+  await Promise.all([loadItems(), loadTodayDaily()]);
+  renderContent();
+  startAutoRefresh();
+}
+
+init();
+</script>
+</body>
+</html>

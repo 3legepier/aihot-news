@@ -1,6 +1,5 @@
-import HTML_CONTENT from './index.html';
-
 const API_BASE = 'https://aihot.virxact.com';
+const HTML_URL = 'https://raw.githubusercontent.com/3legepier/aihot-news/main/index.html';
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 const CORS_HEADERS = {
@@ -8,6 +7,22 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+let htmlCache = null;
+let htmlCacheTime = 0;
+
+async function getHTML() {
+  if (htmlCache && Date.now() - htmlCacheTime < 300000) return htmlCache;
+  try {
+    const resp = await fetch(HTML_URL, { headers: { 'User-Agent': UA } });
+    if (resp.ok) {
+      htmlCache = await resp.text();
+      htmlCacheTime = Date.now();
+      return htmlCache;
+    }
+  } catch {}
+  return htmlCache || '<html><body><h1>Loading...</h1></body></html>';
+}
 
 async function handleAPI(request, url) {
   if (request.method === 'OPTIONS') {
@@ -47,7 +62,8 @@ export default {
       return handleAPI(request, url);
     }
 
-    return new Response(HTML_CONTENT, {
+    const html = await getHTML();
+    return new Response(html, {
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     });
   },
