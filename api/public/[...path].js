@@ -12,10 +12,9 @@ export default async function handler(req, context) {
     return new Response(null, { status: 200, headers: CORS_HEADERS });
   }
 
-  const { params } = context;
-  const pathSegments = Array.isArray(params.path) ? params.path.join('/') : (params.path || '');
-  const search = new URL(req.url).search;
-  const targetUrl = API_BASE + '/api/public/' + pathSegments + search;
+  const url = new URL(req.url);
+  const apiPath = url.pathname.replace(/^\/api\/public\/?/, '');
+  const targetUrl = API_BASE + '/api/public/' + apiPath + url.search;
 
   try {
     const resp = await fetch(targetUrl, {

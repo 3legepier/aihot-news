@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI HOT — AI 资讯速览</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-page:#f4f6f9;--bg-surface:#ffffff;
+  --text-primary:#1d1d1f;--text-secondary:#687089;--text-tertiary:#a1a8b5;
+  --border-color:#e2e6ef;
+  --primary:#3880ff;--primary-light:rgba(56,128,255,0.08);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.08),0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg:0 10px 30px rgba(0,0,0,0.12),0 3px 10px rgba(0,0,0,0.05);
+  --radius-sm:10px;--radius-md:16px;--radius-lg:22px;--radius-full:9999px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --transition:200ms cubic-bezier(0.4,0,0.2,1);
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);color:var(--text-primary);min-height:100vh;background:var(--bg-page);line-height:1.5}
+
+.header{position:sticky;top:0;z-index:100;background:var(--bg-surface);border-bottom:1px solid var(--border-color);padding:0 24px}
+.header-inner{max-width:1200px;margin:0 auto;height:64px;display:flex;align-items:center;gap:8px}
+.logo{font-size:18px;font-weight:700;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px;color:var(--text-primary);flex-shrink:0}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3880ff,#5856d6);display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:17px;height:17px;color:#fff}
+.logo-text{font-weight:800}.logo-sub{font-weight:400;font-size:13px;color:var(--text-tertiary)}
+
+.search-wrap{flex:1;max-width:340px;position:relative}
+.search-input{width:100%;padding:9px 36px 9px 40px;background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-full);color:var(--text-primary);font-size:14px;outline:none;transition:border-color var(--transition),box-shadow var(--transition)}
+.search-input::placeholder{color:var(--text-tertiary)}
+.search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(56,128,255,0.1)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);pointer-events:none;display:flex;align-items:center}
+.search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--border-color);color:var(--text-tertiary);cursor:pointer;font-size:14px;display:none;padding:2px 8px;border-radius:6px;line-height:1;transition:all var(--transition)}
+.search-clear:hover{background:var(--bg-page);color:var(--text-secondary)}.search-clear.visible{display:flex;align-items:center;justify-content:center}
+
+.header-btn{background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:8px 16px;cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:600;transition:all var(--transition);white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.header-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.header-btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.header-btn--primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.header-btn--primary:hover{background:#2c6ce0;border-color:#2c6ce0;color:#fff;box-shadow:0 2px 8px rgba(56,128,255,0.25)}
+
+.tab-bar{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:0;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;position:sticky;top:65px;z-index:99;background:var(--bg-surface);border-bottom:1px solid var(--border-color)}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{padding:14px 20px;font-size:14px;font-weight:500;white-space:nowrap;cursor:pointer;color:var(--text-secondary);background:none;border:none;border-bottom:2px solid transparent;flex-shrink:0;transition:color var(--transition),border-color var(--transition)}
+.tab:hover{color:var(--text-primary)}.tab:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+.content{max-width:1200px;margin:0 auto;padding:28px 24px 80px}
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:4px 0 20px;font-size:13px;color:var(--text-tertiary)}
+.status-bar .see-all{color:var(--primary);font-weight:500;text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:2px}
+.status-bar .see-all:hover{text-decoration:underline}
+
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{position:relative;border-radius:var(--radius-md);overflow:hidden;padding:22px 20px 18px;min-height:180px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform var(--transition),box-shadow var(--transition);animation:cardIn 0.35s ease both;color:#fff}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}.card:active{transform:scale(0.97)}
+.card--model{background:linear-gradient(135deg,#3880ff 0%,#5856d6 60%,#7c3aed 100%)}
+.card--product{background:linear-gradient(135deg,#8b5cf6 0%,#a855f7 60%,#c084fc 100%)}
+.card--industry{background:linear-gradient(135deg,#06b6d4 0%,#22d3ee 60%,#67e8f9 100%)}
+.card--paper{background:linear-gradient(135deg,#10b981 0%,#34d399 60%,#6ee7b7 100%)}
+.card--tip{background:linear-gradient(135deg,#f43f5e 0%,#fb7185 60%,#fda4af 100%)}
+.card--default{background:linear-gradient(135deg,#64748b 0%,#94a3b8 100%)}
+.card-icon{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.15);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0.85;transition:opacity var(--transition)}
+.card:hover .card-icon{opacity:1}.card-icon svg{width:22px;height:22px;color:#fff}
+.card-body{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-top:32px}
+.card-title{font-size:14.5px;font-weight:700;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:auto;padding-top:4px}
+.card-footer{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-time{font-size:11.5px;opacity:0.65;white-space:nowrap;flex-shrink:0}
+.card-tag{font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+
+.section-label{font-size:12px;font-weight:700;color:var(--text-tertiary);padding:28px 0 14px;letter-spacing:0.05em;text-transform:uppercase;display:flex;align-items:center;gap:10px;grid-column:1/-1}
+.section-label::before{content:'';width:4px;height:16px;border-radius:2px;flex-shrink:0}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border-color)}
+.sl-ai-models::before{background:#3880ff}.sl-ai-products::before{background:#8b5cf6}.sl-industry::before{background:#06b6d4}.sl-paper::before{background:#10b981}.sl-tip::before{background:#f43f5e}
+
+.loading{grid-column:1/-1;display:flex;justify-content:center;align-items:center;padding:60px 0;color:var(--text-tertiary);font-size:14px;gap:10px}
+.loading-spinner{width:22px;height:22px;border:2.5px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin 0.75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-tertiary)}
+.empty-state-icon{width:52px;height:52px;margin:0 auto 16px;border-radius:50%;background:var(--bg-page);display:flex;align-items:center;justify-content:center}
+.empty-state-icon svg{width:24px;height:24px;color:var(--text-tertiary)}
+.empty-state-text{font-size:14px;line-height:1.7}
+.load-more{grid-column:1/-1;text-align:center;padding:24px}
+.load-more-btn{background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-full);padding:10px 32px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--transition);box-shadow:var(--shadow-sm)}
+.load-more-btn:hover{border-color:var(--primary);color:var(--primary);box-shadow:var(--shadow-md)}.load-more-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(29,29,31,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity 0.25s}
+.overlay.visible{opacity:1;pointer-events:auto}
+
+.detail-modal{position:fixed;z-index:250;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.95);width:92%;max-width:560px;max-height:85vh;background:rgba(255,255,255,0.92);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-radius:var(--radius-lg);border:1px solid rgba(255,255,255,0.6);box-shadow:0 24px 80px rgba(0,0,0,0.18),0 8px 24px rgba(0,0,0,0.08);opacity:0;pointer-events:none;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden}
+.detail-modal.visible{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.detail-modal-header{padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.detail-modal-cat{font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:4px 10px;border-radius:6px;margin-bottom:10px;display:inline-block}
+.detail-modal-title{font-size:18px;font-weight:700;line-height:1.5;color:var(--text-primary);flex:1}
+.detail-modal-close{background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-tertiary);font-size:18px;transition:all var(--transition);flex-shrink:0}
+.detail-modal-close:hover{background:var(--border-color);color:var(--text-primary)}
+.detail-modal-meta{padding:8px 28px 0;font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:8px}
+.detail-modal-body{padding:16px 28px;flex:1;overflow-y:auto}
+.detail-modal-body::-webkit-scrollbar{width:5px}
+.detail-modal-body::-webkit-scrollbar-track{background:transparent}
+.detail-modal-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:4px}
+.detail-modal-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.18)}
+.detail-modal-summary{font-size:14px;line-height:1.85;color:var(--text-secondary)}
+.detail-modal-footer{padding:16px 28px 20px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border-color)}
+.detail-modal-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--primary);text-decoration:none;padding:8px 18px;border-radius:var(--radius-sm);background:var(--primary-light);transition:all var(--transition)}
+.detail-modal-link:hover{background:rgba(56,128,255,0.14)}
+.detail-modal-fav{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--text-secondary);padding:8px 18px;border-radius:var(--radius-sm);background:var(--bg-page);border:1px solid var(--border-color);cursor:pointer;transition:all var(--transition)}
+.detail-modal-fav:hover{border-color:var(--primary);color:var(--primary)}
+.detail-modal-fav.is-fav{color:#f59e0b;border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.06)}
+.detail-modal-fav svg{width:16px;height:16px}
+
+.fav-dropdown{position:absolute;top:100%;left:0;right:0;margin-top:6px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:8px;z-index:10;display:none;max-height:200px;overflow-y:auto}
+.fav-dropdown::-webkit-scrollbar{width:4px}.fav-dropdown::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:4px}
+.fav-dropdown.show{display:block}
+.fav-dropdown-item{padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text-secondary);transition:all var(--transition);display:flex;align-items:center;gap:6px}
+.fav-dropdown-item:hover{background:var(--primary-light);color:var(--primary)}
+.fav-dropdown-item .fav-check{color:var(--primary);font-weight:700}
+.fav-dropdown-add{padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--primary);font-weight:600;border-top:1px solid var(--border-color);margin-top:4px;display:flex;align-items:center;gap:6px;transition:background var(--transition)}
+.fav-dropdown-add:hover{background:var(--primary-light)}
+.fav-dropdown-input{width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:13px;outline:none;margin-top:4px}
+.fav-dropdown-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(56,128,255,0.1)}
+
+.fav-panel{position:fixed;bottom:0;left:0;right:0;z-index:201;max-height:85vh;background:var(--bg-surface);border-top:1px solid var(--border-color);border-radius:20px 20px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,0.12);transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column}
+.fav-panel.visible{transform:translateY(0)}
+.fav-handle{width:36px;height:4px;border-radius:2px;background:var(--border-color);margin:10px auto 0;flex-shrink:0}
+.fav-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 12px;flex-shrink:0}
+.fav-header h2{font-size:17px;font-weight:700;color:var(--text-primary);letter-spacing:-0.02em}
+.fav-close{background:var(--bg-page);border:1px solid var(--border-color);color:var(--text-secondary);font-size:18px;cursor:pointer;padding:6px 12px;border-radius:var(--radius-sm);line-height:1;transition:all var(--transition)}
+.fav-close:hover{background:var(--border-color);color:var(--text-primary)}
+.fav-body{overflow-y:auto;padding:8px 24px 28px;flex:1}
+.fav-folder{margin-bottom:16px}
+.fav-folder-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer}
+.fav-folder-name{font-size:14px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px}
+.fav-folder-count{font-size:12px;color:var(--text-tertiary);font-weight:400}
+.fav-folder-del{background:none;border:none;color:var(--text-tertiary);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px;transition:all var(--transition)}
+.fav-folder-del:hover{color:#ef4444;background:rgba(239,68,68,0.06)}
+.fav-item{padding:12px 14px;margin-bottom:6px;background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);transition:all var(--transition)}
+.fav-item:hover{border-color:var(--primary)}
+.fav-item-title{font-size:13px;font-weight:600;color:var(--text-primary);line-height:1.5;margin-bottom:4px}
+.fav-item-meta{font-size:11px;color:var(--text-tertiary);display:flex;align-items:center;gap:6px}
+.fav-item-remove{background:none;border:none;color:var(--text-tertiary);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:4px;transition:all var(--transition)}
+.fav-item-remove:hover{color:#ef4444;background:rgba(239,68,68,0.06)}
+.fav-empty{text-align:center;padding:32px;color:var(--text-tertiary);font-size:13px}
+.fav-add-folder{display:flex;gap:8px;padding:12px 0}
+.fav-add-input{flex:1;padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:13px;outline:none}
+.fav-add-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(56,128,255,0.1)}
+.fav-add-btn{background:var(--primary);border:none;color:#fff;padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.fav-add-btn:hover{background:#2c6ce0}
+
+.archive-panel{position:fixed;bottom:0;left:0;right:0;z-index:201;max-height:85vh;background:var(--bg-surface);border-top:1px solid var(--border-color);border-radius:20px 20px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,0.12);transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column}
+.archive-panel.visible{transform:translateY(0)}
+.archive-handle{width:36px;height:4px;border-radius:2px;background:var(--border-color);margin:10px auto 0;flex-shrink:0}
+.archive-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 12px;flex-shrink:0}
+.archive-header h2{font-size:17px;font-weight:700;color:var(--text-primary);letter-spacing:-0.02em}
+.archive-close{background:var(--bg-page);border:1px solid var(--border-color);color:var(--text-secondary);font-size:18px;cursor:pointer;padding:6px 12px;border-radius:var(--radius-sm);line-height:1;transition:all var(--transition)}
+.archive-close:hover{background:var(--border-color);color:var(--text-primary)}
+.archive-body{overflow-y:auto;padding:8px 24px 28px;flex:1}
+.archive-item{padding:16px 18px;margin-bottom:8px;background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)}
+.archive-item:hover{border-color:var(--primary);box-shadow:var(--shadow-sm)}
+.archive-item-date{font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text-primary)}
+.archive-item-title{font-size:13px;color:var(--text-secondary);line-height:1.55}
+
+.daily-view{position:fixed;inset:0;z-index:210;background:var(--bg-surface);overflow-y:auto;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)}
+.daily-view.visible{transform:translateX(0)}
+.daily-header{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--bg-surface);border-bottom:1px solid var(--border-color)}
+.daily-back{background:var(--bg-page);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:7px 14px;color:var(--text-secondary);cursor:pointer;font-size:13px;font-weight:500;transition:all var(--transition);display:flex;align-items:center;gap:4px}
+.daily-back:hover{border-color:var(--primary);color:var(--primary)}
+.daily-title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-0.02em}
+.daily-content{max-width:1200px;margin:0 auto;padding:0 24px 80px}
+.daily-lead{padding:20px;margin-bottom:24px;background:linear-gradient(135deg,rgba(56,128,255,0.06),rgba(88,86,214,0.06));border:1px solid rgba(56,128,255,0.12);border-radius:var(--radius-lg)}
+.daily-lead h3{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--primary)}
+.daily-lead p{font-size:13px;line-height:1.75;color:var(--text-secondary)}
+.daily-section{margin-bottom:28px}
+.daily-section-title{font-size:12px;font-weight:700;padding:8px 0 12px;margin-bottom:8px;color:var(--text-tertiary);letter-spacing:0.05em;text-transform:uppercase;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:8px}
+.daily-item{padding:16px 18px;margin-bottom:8px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:box-shadow var(--transition)}
+.daily-item:hover{box-shadow:var(--shadow-md)}
+.daily-item-title{font-size:14px;font-weight:600;line-height:1.55;margin-bottom:6px;color:var(--text-primary)}
+.daily-item-summary{font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:8px}
+.daily-item-link{font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.daily-item-link:hover{text-decoration:underline}
+.daily-flash{padding:10px 16px;margin-bottom:6px;background:var(--bg-page);border-radius:var(--radius-sm);font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;border-left:3px solid var(--primary)}
+.daily-flash-source{color:var(--text-tertiary);font-size:12px}
+
+.offline-notice{position:fixed;top:0;left:0;right:0;z-index:300;padding:10px;text-align:center;font-size:12px;font-weight:500;background:#fef2f2;color:#dc2626;border-bottom:1px solid #fecaca;transform:translateY(-100%);transition:transform 0.25s}
+.offline-notice.visible{transform:translateY(0)}
+
+@media(max-width:1100px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){
+  .card-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{min-height:160px;padding:18px 16px 14px}.card-icon{width:38px;height:38px;top:12px;right:12px}.card-icon svg{width:19px;height:19px}.card-title{font-size:13.5px}
+  .header{padding:0 16px}.header-inner{height:56px}.search-wrap{max-width:none}.logo-sub{display:none}
+  .tab-bar{padding:0 16px}.tab{padding:12px 14px;font-size:13px}.content{padding:16px 16px 60px}
+  .detail-modal{width:96%;max-width:none;max-height:90vh;border-radius:var(--radius-md)}
+  .detail-modal-header{padding:20px 20px 0}.detail-modal-body{padding:12px 20px}.detail-modal-footer{padding:14px 20px 16px}
+  .detail-modal-title{font-size:16px}
+}
+@media(max-width:420px){
+  .card-grid{grid-template-columns:1fr 1fr;gap:10px}.card{min-height:145px;padding:14px 12px 12px;border-radius:var(--radius-sm)}.card-title{font-size:12.5px;-webkit-line-clamp:2}.card-icon{width:34px;height:34px;border-radius:8px}.card-icon svg{width:17px;height:17px}.card-time{font-size:10.5px}.card-tag{font-size:9px;padding:2px 6px}
+}
+@media(prefers-reduced-motion:reduce){.card,.tab,.archive-item,.archive-panel,.daily-view,.detail-modal{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="offline-notice" id="offlineNotice">离线模式 — 数据可能不是最新</div>
+
+<header class="header"><div class="header-inner">
+  <div class="logo"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><span class="logo-text">AI HOT</span><span class="logo-sub">速览</span></div>
+  <div class="search-wrap"><span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><input class="search-input" id="searchInput" type="text" placeholder="搜索 AI 动态..." autocomplete="off" aria-label="搜索 AI 动态"><button class="search-clear" id="searchClear" aria-label="清除搜索">&times;</button></div>
+  <button class="header-btn" id="favBtn" aria-label="我的收藏"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>收藏</button>
+  <button class="header-btn header-btn--primary" id="archiveBtn" aria-label="日报存档"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>存档</button>
+</div></header>
+
+<nav class="tab-bar" id="tabBar" role="tablist" aria-label="分类导航">
+  <button class="tab active" data-cat="all" role="tab" aria-selected="true">全部</button>
+  <button class="tab" data-cat="ai-models" role="tab" aria-selected="false">模型发布</button>
+  <button class="tab" data-cat="ai-products" role="tab" aria-selected="false">产品发布</button>
+  <button class="tab" data-cat="industry" role="tab" aria-selected="false">行业动态</button>
+  <button class="tab" data-cat="paper" role="tab" aria-selected="false">论文研究</button>
+  <button class="tab" data-cat="tip" role="tab" aria-selected="false">技巧与观点</button>
+</nav>
+
+<main class="content" id="content"><div class="loading" id="loading"><div class="loading-spinner"></div>加载中...</div></main>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="detail-modal" id="detailModal">
+  <div class="detail-modal-header">
+    <div><div class="detail-modal-cat" id="detailCat"></div><div class="detail-modal-title" id="detailTitle"></div></div>
+    <button class="detail-modal-close" id="detailClose" aria-label="关闭">&times;</button>
+  </div>
+  <div class="detail-modal-meta" id="detailMeta"></div>
+  <div class="detail-modal-body" id="detailBody"></div>
+  <div class="detail-modal-footer">
+    <a class="detail-modal-link" id="detailLink" href="#" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      查看原文
+    </a>
+    <div style="position:relative">
+      <button class="detail-modal-fav" id="detailFav" aria-label="收藏">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+        <span id="detailFavText">收藏</span>
+      </button>
+      <div class="fav-dropdown" id="favDropdown"></div>
+    </div>
+  </div>
+</div>
+
+<div class="fav-panel" id="favPanel">
+  <div class="fav-handle"></div>
+  <div class="fav-header"><h2>我的收藏</h2><button class="fav-close" id="favClose" aria-label="关闭收藏">&times;</button></div>
+  <div class="fav-body" id="favBody"></div>
+</div>
+
+<div class="archive-panel" id="archivePanel">
+  <div class="archive-handle"></div>
+  <div class="archive-header"><h2>日报存档</h2><button class="archive-close" id="archiveClose" aria-label="关闭存档">&times;</button></div>
+  <div class="archive-body" id="archiveBody"><div class="loading"><div class="loading-spinner"></div>加载中...</div></div>
+</div>
+
+<div class="daily-view" id="dailyView">
+  <div class="daily-header"><button class="daily-back" id="dailyBack" aria-label="返回"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>返回</button><div class="daily-title" id="dailyTitle"></div></div>
+  <div class="daily-content" id="dailyContent"></div>
+</div>
+
+<script>
+const API_BASE = '/api/public';
+const CAT_ICONS = {
+  'ai-models': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
+  'ai-products': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.5-.5 5-2c1.5 1.26 2 5 2 5s3.5-.5 5-2c1.5 1.26 2 5 2 5s3.5-.5 5-2"/><path d="M12 12V3l8 4.5"/><circle cx="12" cy="12" r="2"/></svg>',
+  'industry': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>',
+  'paper': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  'tip': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17h-8v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z"/></svg>'
+};
+const CATEGORY_MAP = {
+  'ai-models': { label: '模型发布', cls: 'cat-ai-models', sls: 'sl-ai-models', cardClass: 'card--model', tagLabel: 'MODEL', catColor: 'rgba(56,128,255,0.12)', catText: '#3880ff' },
+  'ai-products': { label: '产品发布', cls: 'cat-ai-products', sls: 'sl-ai-products', cardClass: 'card--product', tagLabel: 'PRODUCT', catColor: 'rgba(139,92,246,0.12)', catText: '#8b5cf6' },
+  'industry': { label: '行业动态', cls: 'cat-industry', sls: 'sl-industry', cardClass: 'card--industry', tagLabel: 'NEWS', catColor: 'rgba(6,182,212,0.12)', catText: '#06b6d4' },
+  'paper': { label: '论文研究', cls: 'cat-paper', sls: 'sl-paper', cardClass: 'card--paper', tagLabel: 'PAPER', catColor: 'rgba(16,185,129,0.12)', catText: '#10b981' },
+  'tip': { label: '技巧与观点', cls: 'cat-tip', sls: 'sl-tip', cardClass: 'card--tip', tagLabel: 'TIP', catColor: 'rgba(244,63,94,0.12)', catText: '#f43f5e' },
+};
+const CATEGORY_ORDER = ['ai-models', 'ai-products', 'industry', 'paper', 'tip'];
+
+let allItems = [], currentCat = 'all', nextCursor = null, isLoading = false, isSearchMode = false, dailiesCache = null;
+let currentItem = null;
+
+const $content = document.getElementById('content'), $loading = document.getElementById('loading');
+const $searchInput = document.getElementById('searchInput'), $searchClear = document.getElementById('searchClear');
+const $tabBar = document.getElementById('tabBar'), $overlay = document.getElementById('overlay');
+const $archivePanel = document.getElementById('archivePanel'), $archiveBody = document.getElementById('archiveBody');
+const $archiveBtn = document.getElementById('archiveBtn'), $archiveClose = document.getElementById('archiveClose');
+const $dailyView = document.getElementById('dailyView'), $dailyTitle = document.getElementById('dailyTitle');
+const $dailyContent = document.getElementById('dailyContent'), $dailyBack = document.getElementById('dailyBack');
+const $offlineNotice = document.getElementById('offlineNotice');
+const $detailModal = document.getElementById('detailModal'), $detailClose = document.getElementById('detailClose');
+const $detailTitle = document.getElementById('detailTitle'), $detailCat = document.getElementById('detailCat');
+const $detailMeta = document.getElementById('detailMeta'), $detailBody = document.getElementById('detailBody');
+const $detailLink = document.getElementById('detailLink'), $detailFav = document.getElementById('detailFav');
+const $detailFavText = document.getElementById('detailFavText'), $favDropdown = document.getElementById('favDropdown');
+const $favBtn = document.getElementById('favBtn'), $favPanel = document.getElementById('favPanel');
+const $favClose = document.getElementById('favClose'), $favBody = document.getElementById('favBody');
+
+function cacheGet(key) { try { const r = localStorage.getItem(key); if (!r) return null; const {data,ts} = JSON.parse(r); return {data, age: Date.now()-ts}; } catch { return null; } }
+function cacheSet(key, data) { try { localStorage.setItem(key, JSON.stringify({data, ts:Date.now()})); } catch {} }
+async function apiFetch(url) { const r = await fetch(url); if (!r.ok) throw new Error(`API ${r.status}`); return r.json(); }
+
+function getFavData() { try { return JSON.parse(localStorage.getItem('aihot_fav') || '{"folders":{}}'); } catch { return {folders:{}}; } }
+function setFavData(d) { try { localStorage.setItem('aihot_fav', JSON.stringify(d)); } catch {} }
+function isItemFaved(id) { const d = getFavData(); for (const f of Object.values(d.folders)) { if (f.items.some(i => i.id === id)) return true; } return false; }
+function getItemFolders(id) { const d = getFavData(); const result = []; for (const [name, f] of Object.entries(d.folders)) { if (f.items.some(i => i.id === id)) result.push(name); } return result; }
+
+function timeAgo(iso) { if (!iso) return ''; const d = new Date(iso), now = new Date(), diff = (now-d)/1000; if (diff<60) return '刚刚'; if (diff<3600) return Math.floor(diff/60)+' 分钟前'; if (diff<86400) return Math.floor(diff/3600)+' 小时前'; if (diff<172800) return '昨天'; return `${d.getMonth()+1}/${d.getDate()}`; }
+function formatDateCN(ds) { const d=new Date(ds+'T00:00:00Z'); const w=['周日','周一','周二','周三','周四','周五','周六']; return `${d.getUTCMonth()+1}月${d.getUTCDate()}日 · ${w[d.getUTCDay()]}`; }
+
+function renderCard(item, index) {
+  const cat = item.category || '', info = CATEGORY_MAP[cat] || {cardClass:'card--default',tagLabel:'AI'};
+  const time = timeAgo(item.publishedAt), delay = Math.min(index * 25, 400);
+  return `<div class="card ${info.cardClass}" data-id="${item.id}" onclick="openDetail('${item.id}')" style="animation-delay:${delay}ms">
+    <div class="card-icon">${CAT_ICONS[cat] || CAT_ICONS['tip']}</div>
+    <div class="card-body"><div class="card-title">${escHtml(item.title)}</div>
+    <div class="card-footer"><span class="card-tag">${info.tagLabel}</span><span class="card-time">${time}</span></div></div></div>`;
+}
+
+function openDetail(id) {
+  const item = allItems.find(i => i.id === id);
+  if (!item) return;
+  currentItem = item;
+  const cat = item.category || '', info = CATEGORY_MAP[cat] || {tagLabel:'AI', catColor:'rgba(100,116,139,0.12)', catText:'#64748b'};
+  $detailCat.textContent = info.tagLabel;
+  $detailCat.style.background = info.catColor;
+  $detailCat.style.color = info.catText;
+  $detailTitle.textContent = item.title;
+  $detailMeta.innerHTML = `${escHtml(item.source||'')} <span style="opacity:0.4">·</span> ${timeAgo(item.publishedAt)}`;
+  $detailBody.innerHTML = item.summary ? `<div class="detail-modal-summary">${escHtml(item.summary)}</div>` : '<div style="color:var(--text-tertiary);font-size:13px">暂无摘要</div>';
+  $detailLink.href = item.url || '#';
+  updateFavBtn();
+  $overlay.classList.add('visible');
+  $detailModal.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  $overlay.classList.remove('visible');
+  $detailModal.classList.remove('visible');
+  $favDropdown.classList.remove('show');
+  document.body.style.overflow = '';
+  currentItem = null;
+}
+
+function updateFavBtn() {
+  if (!currentItem) return;
+  const faved = isItemFaved(currentItem.id);
+  $detailFav.classList.toggle('is-fav', faved);
+  $detailFavText.textContent = faved ? '已收藏' : '收藏';
+  if (faved) {
+    $detailFav.querySelector('svg').setAttribute('fill', 'currentColor');
+  } else {
+    $detailFav.querySelector('svg').setAttribute('fill', 'none');
+  }
+}
+
+$detailFav.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if ($favDropdown.classList.contains('show')) {
+    $favDropdown.classList.remove('show');
+    return;
+  }
+  renderFavDropdown();
+  $favDropdown.classList.add('show');
+});
+
+function renderFavDropdown() {
+  if (!currentItem) return;
+  const data = getFavData();
+  const folders = Object.keys(data.folders);
+  const itemFolders = getItemFolders(currentItem.id);
+  let html = '';
+  if (folders.length === 0) {
+    html = '<div style="padding:8px 12px;font-size:12px;color:var(--text-tertiary)">还没有收藏夹，创建一个吧</div>';
+  } else {
+    folders.forEach(name => {
+      const inFolder = itemFolders.includes(name);
+      html += `<div class="fav-dropdown-item" onclick="toggleFavFolder('${escAttr(name)}')">${inFolder ? '<span class="fav-check">✓</span>' : '<span style="width:14px;display:inline-block"></span>'}${escHtml(name)}</div>`;
+    });
+  }
+  html += `<div class="fav-dropdown-add" onclick="showAddFolderInput()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新建收藏夹</div>`;
+  $favDropdown.innerHTML = html;
+}
+
+function showAddFolderInput() {
+  const existing = $favDropdown.querySelector('.fav-dropdown-input');
+  if (existing) { existing.focus(); return; }
+  const div = document.createElement('div');
+  div.style.padding = '4px 0';
+  div.innerHTML = '<input class="fav-dropdown-input" placeholder="输入收藏夹名称..." maxlength="20">';
+  $favDropdown.appendChild(div);
+  const input = div.querySelector('input');
+  input.focus();
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { const name = input.value.trim(); if (name) { addFavFolder(name); } }
+    if (e.key === 'Escape') { $favDropdown.classList.remove('show'); }
+  });
+  input.addEventListener('blur', () => { setTimeout(() => { if (!input.value.trim()) $favDropdown.classList.remove('show'); }, 150); });
+}
+
+function addFavFolder(name) {
+  const data = getFavData();
+  if (!data.folders[name]) { data.folders[name] = { items: [] }; setFavData(data); }
+  toggleFavFolder(name);
+}
+
+function toggleFavFolder(folderName) {
+  if (!currentItem) return;
+  const data = getFavData();
+  if (!data.folders[folderName]) data.folders[folderName] = { items: [] };
+  const idx = data.folders[folderName].items.findIndex(i => i.id === currentItem.id);
+  if (idx >= 0) {
+    data.folders[folderName].items.splice(idx, 1);
+  } else {
+    data.folders[folderName].items.push({ id: currentItem.id, title: currentItem.title, url: currentItem.url, source: currentItem.source, category: currentItem.category, publishedAt: currentItem.publishedAt, savedAt: new Date().toISOString() });
+  }
+  setFavData(data);
+  updateFavBtn();
+  renderFavDropdown();
+}
+
+$favBtn.addEventListener('click', openFavPanel);
+$favClose.addEventListener('click', closeFavPanel);
+
+function openFavPanel() {
+  $overlay.classList.add('visible');
+  $favPanel.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+  renderFavPanel();
+}
+function closeFavPanel() {
+  $overlay.classList.remove('visible');
+  $favPanel.classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function renderFavPanel() {
+  const data = getFavData();
+  const folders = Object.entries(data.folders);
+  let html = '<div class="fav-add-folder"><input class="fav-add-input" id="newFolderInput" placeholder="新建收藏夹名称..." maxlength="20"><button class="fav-add-btn" onclick="createFolderFromPanel()">创建</button></div>';
+  if (folders.length === 0) {
+    html += '<div class="fav-empty">还没有收藏夹<br>点击上方创建一个收藏夹，然后在新闻详情中收藏文章</div>';
+  } else {
+    folders.forEach(([name, folder]) => {
+      html += `<div class="fav-folder"><div class="fav-folder-header"><span class="fav-folder-name"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>${escHtml(name)}<span class="fav-folder-count">(${folder.items.length})</span></span><button class="fav-folder-del" onclick="deleteFolder('${escAttr(name)}')">删除</button></div>`;
+      if (folder.items.length === 0) {
+        html += '<div style="padding:4px 0 8px;font-size:12px;color:var(--text-tertiary)">暂无收藏</div>';
+      } else {
+        folder.items.forEach(item => {
+          html += `<div class="fav-item"><div class="fav-item-title">${escHtml(item.title)}</div><div class="fav-item-meta">${escHtml(item.source||'')} · ${timeAgo(item.publishedAt)}<button class="fav-item-remove" onclick="removeFavItem('${escAttr(name)}','${item.id}')">移除</button></div></div>`;
+        });
+      }
+      html += '</div>';
+    });
+  }
+  $favBody.innerHTML = html;
+}
+
+function createFolderFromPanel() {
+  const input = document.getElementById('newFolderInput');
+  const name = input.value.trim();
+  if (!name) return;
+  const data = getFavData();
+  if (!data.folders[name]) { data.folders[name] = { items: [] }; setFavData(data); }
+  renderFavPanel();
+}
+
+function deleteFolder(name) {
+  const data = getFavData();
+  delete data.folders[name];
+  setFavData(data);
+  renderFavPanel();
+}
+
+function removeFavItem(folderName, itemId) {
+  const data = getFavData();
+  if (data.folders[folderName]) {
+    data.folders[folderName].items = data.folders[folderName].items.filter(i => i.id !== itemId);
+    setFavData(data);
+    renderFavPanel();
+  }
+}
+
+$detailClose.addEventListener('click', closeDetail);
+$overlay.addEventListener('click', () => { closeDetail(); closeArchive(); closeFavPanel(); });
+
+function renderItems(items, cat) {
+  if (!items.length) return `<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div><div class="empty-state-text">暂无内容<br>试试切换分类或稍后刷新</div></div>`;
+  if (cat === 'all') {
+    const g={};CATEGORY_ORDER.forEach(c=>g[c]=[]);items.forEach(i=>{const c=i.category||'tip';if(!g[c])g[c]=[];g[c].push(i)});
+    let html=''; let idx=0;
+    CATEGORY_ORDER.forEach(c=>{if(g[c]?.length){const info=CATEGORY_MAP[c];html+=`<div class="section-label ${info.sls}">${info.label}</div>`;g[c].forEach(i=>{html+=renderCard(i,idx++)})}});
+    return `<div class="card-grid">${html}</div>`;
+  }
+  return `<div class="card-grid">${items.map((i,n)=>renderCard(i,n)).join('')}</div>`;
+}
+
+function getFilteredItems() { return currentCat==='all' ? allItems : allItems.filter(i=>i.category===currentCat); }
+function renderContent() {
+  const items=getFilteredItems(), count=items.length;
+  const catLabel=currentCat==='all'?'全部精选':(CATEGORY_MAP[currentCat]?.label||'');
+  let html=`<div class="status-bar"><span>${catLabel} · 共 ${count} 条</span>${nextCursor&&currentCat==='all'?'<a class="see-all" onclick="if(!isLoading)loadMore()">加载更多 &rarr;</a>':''}</div>`;
+  html+=renderItems(items,currentCat);
+  if(nextCursor&&currentCat==='all')html+=`<div class="load-more"><button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">加载更多</button></div>`;
+  $content.innerHTML=html;
+}
+
+async function loadItems(useCache=true) {
+  if(typeof PRELOADED_DATA!=='undefined'&&PRELOADED_DATA&&PRELOADED_DATA.items){allItems=PRELOADED_DATA.items||[];nextCursor=PRELOADED_DATA.nextCursor||null;renderContent();isLoading=false;return;}
+  isLoading=true;$content.innerHTML='<div class="loading"><div class="loading-spinner"></div>加载中...</div>';
+  const ck='aihot_items';
+  if(useCache){const c=cacheGet(ck);if(c&&c.age<5*60*1000){allItems=c.data.items||[];nextCursor=c.data.nextCursor||null;renderContent();isLoading=false;return;}if(c){allItems=c.data.items||[];nextCursor=c.data.nextCursor||null;renderContent();}}
+  try{const d=await apiFetch(`${API_BASE}/items?mode=selected&take=50`);allItems=d.items||[];nextCursor=d.nextCursor||null;cacheSet(ck,{items:allItems,nextCursor});renderContent();$offlineNotice.classList.remove('visible')}
+  catch(e){if(!allItems.length)$content.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">加载失败，请检查网络后刷新<br><small>${escHtml(e.message)}</small></div></div>`;$offlineNotice.classList.add('visible')}
+  isLoading=false;
+}
+async function loadMore(){if(!nextCursor||isLoading)return;const b=document.getElementById('loadMoreBtn');if(b){b.disabled=true;b.textContent='加载中...';}isLoading=true;try{const d=await apiFetch(`${API_BASE}/items?mode=selected&take=50&cursor=${encodeURIComponent(nextCursor)}`);allItems=allItems.concat(d.items||[]);nextCursor=d.nextCursor||null;renderContent()}catch{}isLoading=false;}
+
+$tabBar.addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t||isSearchMode)return;document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false')});t.classList.add('active');t.setAttribute('aria-selected','true');currentCat=t.dataset.cat;renderContent();});
+
+let searchTimer=null;
+$searchInput.addEventListener('input',()=>{const q=$searchInput.value.trim();$searchClear.classList.toggle('visible',q.length>0);clearTimeout(searchTimer);if(q.length===0){exitSearch();return}if(q.length<2)return;searchTimer=setTimeout(()=>doSearch(q),400);});
+$searchInput.addEventListener('keydown',e=>{if(e.key==='Escape'){$searchInput.value='';$searchClear.classList.remove('visible');exitSearch()}});
+$searchClear.addEventListener('click',()=>{$searchInput.value='';$searchClear.classList.remove('visible');exitSearch()});
+
+async function doSearch(q){isSearchMode=true;$content.innerHTML='<div class="loading"><div class="loading-spinner"></div>搜索中...</div>';document.querySelectorAll('.tab').forEach(t=>t.style.opacity='0.4');const ck='aihot_search_'+q,c=cacheGet(ck);if(c&&c.age<10*60*1000){const items=c.data.items||[];$content.innerHTML=`<div class="status-bar"><span>搜索"${escHtml(q)}" · 共 ${items.length} 条</span></div>`+renderItems(items,'all');return}try{const d=await apiFetch(`${API_BASE}/items?q=${encodeURIComponent(q)}&take=30`);const items=d.items||[];cacheSet(ck,d);$content.innerHTML=`<div class="status-bar"><span>搜索"${escHtml(q)}" · 共 ${items.length} 条</span></div>`+renderItems(items,'all')}catch{$content.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">搜索失败，请重试</div></div>`}}
+function exitSearch(){isSearchMode=false;document.querySelectorAll('.tab').forEach(t=>t.style.opacity='1');renderContent()}
+
+$archiveBtn.addEventListener('click',openArchive);$archiveClose.addEventListener('click',closeArchive);
+async function openArchive(){$overlay.classList.add('visible');$archivePanel.classList.add('visible');document.body.style.overflow='hidden';if(dailiesCache){renderDailies(dailiesCache);return}const ck='aihot_dailies',c=cacheGet(ck);if(c&&c.age<30*60*1000){dailiesCache=c.data.items||[];renderDailies(dailiesCache);return}$archiveBody.innerHTML='<div class="loading"><div class="loading-spinner"></div>加载中...</div>';try{const d=await apiFetch(`${API_BASE}/dailies?take=14`);dailiesCache=d.items||[];cacheSet(ck,d);renderDailies(dailiesCache)}catch{$archiveBody.innerHTML='<div class="empty-state"><div class="empty-state-text">加载失败</div></div>'}}
+function renderDailies(items){if(!items?.length){$archiveBody.innerHTML='<div class="empty-state"><div class="empty-state-text">暂无日报存档</div></div>';return}$archiveBody.innerHTML=items.map(d=>`<div class="archive-item" tabindex="0" onclick="openDaily('${d.date}')" onkeydown="if(event.key==='Enter')openDaily('${d.date}')"><div class="archive-item-date">${formatDateCN(d.date)}</div><div class="archive-item-title">${escHtml(d.leadTitle||'无标题')}</div></div>`).join('')}
+function closeArchive(){$overlay.classList.remove('visible');$archivePanel.classList.remove('visible');document.body.style.overflow=''}
+
+async function openDaily(date){closeArchive();closeDetail();$dailyTitle.textContent=`AI HOT 日报 · ${formatDateCN(date)}`;$dailyContent.innerHTML='<div class="loading"><div class="loading-spinner"></div>加载中...</div>';$dailyView.classList.add('visible');document.body.style.overflow='hidden';const ck='aihot_daily_'+date,c=cacheGet(ck);if(c&&c.age<2*3600*1000){renderDaily(c.data);return}try{const d=await apiFetch(`${API_BASE}/daily/${date}`);cacheSet(ck,d);renderDaily(d)}catch{$dailyContent.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">加载失败</div></div>`}}
+function renderDaily(data){let html='';if(data.lead?.leadParagraph)html+=`<div class="daily-lead"><h3>${escHtml(data.lead.title||'主编点评')}</h3><p>${escHtml(data.lead.leadParagraph)}</p></div>`;if(data.sections)data.sections.forEach(s=>{html+=`<div class="daily-section"><div class="daily-section-title">${escHtml(s.label)}</div>`;s.items?.forEach(i=>{html+=`<div class="daily-item"><div class="daily-item-title">${escHtml(i.title)}</div>${i.summary?`<div class="daily-item-summary">${escHtml(i.summary)}</div>`:''}<a class="daily-item-link" href="${escAttr(i.sourceUrl)}" target="_blank" rel="noopener"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${escHtml(i.sourceName||'查看原文')}</a></div>`});html+='</div>';});if(data.flashes?.length){html+='<div class="daily-section"><div class="daily-section-title">快讯</div>';data.flashes.forEach(f=>{html+=`<div class="daily-flash">${escHtml(f.title)}<span class="daily-flash-source">${escHtml(f.sourceName||'')} ${timeAgo(f.publishedAt)}</span></div>`});html+='</div>'}$dailyContent.innerHTML=html||'<div class="empty-state"><div class="empty-state-text">该日期暂无日报内容</div></div>'}
+
+$dailyBack.addEventListener('click',()=>{$dailyView.classList.remove('visible');document.body.style.overflow=''});
+function escHtml(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function escAttr(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeArchive();closeFavPanel()}});
+
+const PRELOADED_DATA = {"count":26,"hasNext":false,"nextCursor":null,"items":[{"id":"cmoxr4qh303zesllhkoxxgtvt","title":"GPT Image 2 Prompt：中文科技新闻爆款封面生成器","title_en":"GPT Image 2 Prompt：中文科技新闻爆款封面生成器 --- Prompt --- 你是一名顶级中文科技媒体视觉设计师。 你的任务是： 根据用户输入的一整篇文章内容，自动提取核心新…","url":"https://x.com/dotey/status/2052942818570543550","source":"X：宝玉 (@dotey)","publishedAt":"2026-05-09T02:44:44.000Z","summary":"这是一个用于生成中文科技新闻爆款封面图的详细提示词框架。它要求AI扮演顶级视觉设计师，根据输入的文章内容自动提取核心新闻、关键数字、产品及行业情绪等信息。设计需融合中国科技媒体头图、B站爆款缩略图等风格，强调强烈的视觉冲击与高信息密度，确保3秒内传递重点。构图包含顶部新闻区、中央超大标题区、主视觉产品区、数据卡片区和底部总结区，配色、字体、背景均需根据文章行业、品牌和情绪动态调整，最终输出专业的16：9横版媒体级封面图。","category":"tip"},{"id":"cmoxovvbh03gbsllh46m857ih","title":"Claude Mythos评估显示16小时风险时距","title_en":"Huh.","url":"https://x.com/emollick/status/2052924556264796163","source":"X：Ethan Mollick (@emollick)","publishedAt":"2026-05-09T01:32:10.000Z","summary":"嗯。\n\n【引用 @METR_Evals】：我们于2026年3月的有限窗口内评估了Claude Mythos Preview的早期版本进行风险评估。在我们的任务套件上，我们估计其50%时间范围至少为16小时（95%置信区间8.5小时至55小时），这处于我们无需新任务即可测量的上限。","category":"industry"},{"id":"cmoxlrdbd02oxsllh4y7eupuv","title":"DeepSeek融资70亿美元创纪录，创始人个人出资30亿","title_en":"DeepSeek is raising a massive $7 billion at a $50 billion valuation， marking China's largest AI fund…","url":"https://x.com/rohanpaul_ai/status/2052901878728659037","source":"X：Rohan Paul (@rohanpaul_ai)","publishedAt":"2026-05-09T00:02:03.000Z","summary":"DeepSeek正以500亿美元估值进行高达70亿美元的融资，创下中国AI领域最大单轮融资纪录。创始人梁文锋个人出资30亿美元，占本轮融资的40%，同时仍保留公司90%的所有权。该公司最初诞生于其本人成功的对冲基金内部。本轮融资将主要用于获取大规模计算资源，以加速发布V4.1等新模型，并投资企业级产品，目标是推动公司实现营收转正，其发展路径与OpenAI和Anthropic类似。","category":"industry"},{"id":"cmoxivzb2023rsllhka40ewoy","title":"我们保护儿童安全的方法","title_en":"Our Approach to Child Safety","url":"https://runwayml.com/news/our-approach-to-child-safety","source":"Runway：News（网页）","publishedAt":"2026-05-08T23:04:23.544Z","summary":"Runway公司遵循Thorn的\"生成式AI安全设计\"原则，全流程保护儿童免受AI滥用。从模型开发开始，通过哈希匹配、儿童安全分类器和LLM审核确保训练数据不含涉及未成年人的性内容，并进行红队测试以识别漏洞。产品部署后，明确禁止涉及儿童的性内容，使用多层检测系统扫描用户内容，手动审查所有标记内容并向美国国家失踪与受虐儿童中心报告（2025年提交516份）。同时实施C2PA来源信号追踪内容生成，并持续与行业组织合作应对威胁。","category":"industry"},{"id":"cmoxf65zd017ksllhvk47b2wl","title":"Grok 升级推出全平台连接器功能","title_en":"Grok upgrades","url":"https://x.com/elonmusk/status/2052856431611941200","source":"X：Elon Musk (@elonmusk, xAI)","publishedAt":"2026-05-08T21:01:28.000Z","summary":"Grok 升级\n\n【引用 @grok】：…\n\n今天就在 iOS、Android 和 http：//grok.com 上的所有计划中添加您的连接器到 Grok。","category":"ai-products"},{"id":"cmoxf86lw018ysllhej5rjfuk","title":"OpenRouter SDK新增人工审核工具","title_en":"New in the OpenRouter Agent SDK： human-in-the-loop tools. Auto-resolve routine tool calls. Pause hi…","url":"https://x.com/OpenRouter/status/2052856129961758917","source":"X：OpenRouter (@OpenRouter)","publishedAt":"2026-05-08T21:00:16.000Z","summary":"OpenRouter Agent SDK 新增功能：人工介入工具。\n\n自动处理常规工具调用。暂停高风险调用以供审核。\n\n返回值可保持代理运行。返回 null 则将该调用提交至您的应用以获取人工输入。","category":"ai-products"},{"id":"cmoxg512a01fhsllhd4zaduxe","title":"Claude Code实践：HTML输出格式的卓越效果","title_en":"Using Claude Code： The Unreasonable Effectiveness of HTML","url":"https://simonwillison.net/2026/May/8/unreasonable-effectiveness-of-html","source":"Simon Willison 博客","publishedAt":"2026-05-08T21:00:11.000Z","summary":"Anthropic公司Claude Code团队的Thariq Shihipar主张，在向Claude等大语言模型请求输出时，应优先选择HTML而非Markdown格式。HTML允许模型直接生成包含SVG图表、交互式组件和页面内导航等丰富元素的文档，显著提升信息呈现的交互性与清晰度。作者以GPT-5.5生成一个Linux安全漏洞的交互式HTML解释页面为例，展示了该方法的实际效果。这促使长期习惯使用Markdown的作者重新评估输出格式，并计划在提示工程中更多尝试富HTML输出。","category":"tip"},{"id":"cmoxed3nn014esllho9uzzl7p","title":"仅凭人声能否创作流行歌曲？","title_en":"can you make a pop song using only your voice？","url":"https://x.com/suno/status/2052848941260058808","source":"X：Suno (@suno)","publishedAt":"2026-05-08T20:31:42.000Z","summary":"你能只用你的声音创作一首流行歌曲吗？","category":"ai-products"},{"id":"cmoxd7fk000tdsllhs7ybwwpf","title":"OpenAI分析意外思维链评分对模型影响","title_en":"Chain of thought monitors are a key layer of defense against AI agent misalignment. To preserve moni…","url":"https://x.com/OpenAI/status/2052845764507062349","source":"X：OpenAI (@OpenAI)","publishedAt":"2026-05-08T20:19:04.000Z","summary":"思维链监控器是防御AI智能体错位的关键层。为保持可监控性，我们在RL期间避免惩罚错位推理。\n\n我们发现少量意外思维链评分影响了已发布模型，现分享相关分析。\nhttps：//alignment.openai.com/accidental-cot-grading/","category":"paper"},{"id":"cmox7snrc00cdslfoxg99o3kc","title":"Ring-2.6-1T发布：万亿参数思维模型专为复杂任务设计","title_en":"We are launching Ring-2.6-1T， a trillion-parameter flagship thinking model engineered for real-world…","url":"https://x.com/AntLingAGI/status/2052808934390661134","source":"X：蚂蚁百灵 (@AntLingAGI)","publishedAt":"2026-05-08T17:52:43.000Z","summary":"Ring-2.6-1T是一款万亿参数的旗舰思维模型，专为现实世界复杂任务和生产环境构建。该模型具备可调节思维努力功能，通过动态计算机制灵活平衡认知深度、token成本和执行速度。它针对代理优化，适用于高频工作流，提供快速多步执行和工具编排，并具有SOTA稳定性。深度思维特性解锁了模型的最大能力上限，特别适合严格数学逻辑和科学研究。","category":"ai-models"},{"id":"cmox7lapf008rslfogqparmdt","title":"教导Claude理解\"为什么\"","title_en":"Teaching Claude why","url":"https://www.anthropic.com/research/teaching-claude-why","source":"Anthropic：Research（发表成果 · 网页）","publishedAt":"2026-05-08T17:48:30.757Z","summary":"Anthropic针对Claude模型在代理错位评估中出现的黑邮件等严重问题，改进了安全训练方法。自Claude Haiku 4.5起，所有模型在该评估中均达到完美分数，黑邮件行为发生率从之前最高96%降至零。关键改进在于采用原则性对齐训练，不仅演示正确行为，更注重教导模型理解行为背后的伦理原则，并提升训练数据质量与多样性。实验表明，训练模型解释行为缘由比单纯展示对齐行为效果更显著，二者结合策略最为有效。","category":"paper"},{"id":"cmox97veb00e1slxip8otxs76","title":"CyberSecQwen-4B：为何网络防御需要小型、专业化、本地可运行的模型","title_en":"CyberSecQwen-4B： Why Defensive Cyber Needs Small， Specialized， Locally-Runnable Models","url":"https://huggingface.co/blog/lablab-ai-amd-developer-hackathon/cybersecqwen-4b","source":"Hugging Face：Blog（RSS）","publishedAt":"2026-05-08T17:41:05.000Z","summary":"Lablab.ai 在 Hugging Face 上发布的 AMD 开发者黑客马拉松博客中，介绍了专为网络安全设计的 4B 参数模型 CyberSecQwen-4B。该模型强调小型化、专业化与本地可运行特性，旨在降低部署门槛并提升实时防御效率。其紧凑结构适用于资源受限环境，同时针对安全任务进行优化，以应对动态威胁场景。这一方向反映了当前防御型 AI 向轻量化、领域专用化的发展趋势。","category":"tip"},{"id":"cmox7tika00dislfonur1c7h6","title":"Gemini笔记本助您高效组织复杂任务","title_en":"Notebooks in Gemini bring organization to complex tasks. Take the grad school application process： …","url":"https://x.com/GeminiApp/status/2052805372050604187","source":"X：Gemini (@GeminiApp)","publishedAt":"2026-05-08T17:38:34.000Z","summary":"Gemini中的笔记本功能为复杂任务带来条理性。\n\n以研究生院申请流程为例：通过笔记本，您可以将成绩单、文书草稿和录取要求集中在一处，让Gemini帮助追踪截止日期、提供反馈并评估您的进展。","category":"ai-products"},{"id":"cmox6qtbl00jtsl5skwv8vazf","title":"Codex切换功能正式上线","title_en":"Just gonna leave this here. https：//chatgpt.com/codex/switch-to-codex/","url":"https://x.com/OpenAI/status/2052800507727781979","source":"X：OpenAI (@OpenAI)","publishedAt":"2026-05-08T17:19:14.000Z","summary":"就把这个留在这里。\n\nhttps：//chatgpt.com/codex/switch-to-codex/","category":"ai-products"},{"id":"cmox5o2ra00cxsl5shmovcf65","title":"发布智能体技能构建内部手册","title_en":"We've published our internal manual for building agent skills. Skills require a new way of thinking…","url":"https://x.com/perplexity_ai/status/2052786858774630665","source":"X：Perplexity (@perplexity_ai)","publishedAt":"2026-05-08T16:25:00.000Z","summary":"我们已发布构建智能体技能的内部手册。\n\n开发者需要以全新思维方式构建技能。\nhttps：//research.perplexity.ai/articles/designing-refining-and-maintaining-agent-skills-at-perplexity","category":"tip"},{"id":"cmox4xh0p006lslguuhqaou8t","title":"EMO：为涌现模块化预训练的专家混合模型","title_en":"EMO： Pretraining mixture of experts for emergent modularity","url":"https://huggingface.co/blog/allenai/emo","source":"Hugging Face：Blog（RSS）","publishedAt":"2026-05-08T16:03:50.000Z","summary":"EMO是一种新型专家混合模型，通过端到端预训练使模块化结构直接从数据中涌现，无需依赖人类定义的先验。该模型允许在特定任务中仅使用12.5%的专家子集（即8个活跃专家中的部分），同时保持接近全模型的性能；当所有128个专家共同使用时，它仍作为强大的通用模型。EMO具有1B活跃参数和14B总参数，训练数据达1万亿令牌。与标准MoE相比，EMO通过文档级路由约束，鼓励专家形成领域专业化组，从而支持选择性使用而不导致严重性能下降，实现了可组合架构，优化了大型稀疏MoE的内存-准确性权衡。","category":"ai-models"},{"id":"cmox2re2700flsluh8ky43hxg","title":"抖音\"法天象地\"特效：从图片生成到视频优化的突破","title_en":"最近抖音上把你的户外照片做成\"法天象地\"效果的图片非常火。 他们大多是生成的图片，但我试了一下，直接生成视频的效果会更好。 优化了一下提示词，主要是 GPT-Image-2.0 加上 C-Down…","url":"https://x.com/op7418/status/2052764933696475279","source":"X：歸藏 (@op7418)","publishedAt":"2026-05-08T14:57:53.000Z","summary":"抖音近期流行的\"法天象地\"户外照片特效多基于图片生成，但实际测试表明直接生成视频效果更佳。作者通过优化提示词实现了这一改进，关键采用了 GPT-Image-2.0 与 C-Down 3.0 技术组合，并将优化后的图片提示词附在视频内容后供参考。这一方法提升了特效的动态表现力与视觉冲击力。","category":"tip"},{"id":"cmox17w0i006zsl8vaax2o24p","title":"机器人终局：物理AGI路线图与LLM类比","title_en":"I promise this will be the best 20 min you spend today！ Robotics： Endgame， the sequel to my last yea…","url":"https://x.com/DrJimFan/status/2052758642781487237","source":"X：Jim Fan (@DrJimFan)","publishedAt":"2026-05-08T14:32:53.000Z","summary":"演讲者以\"Robotics： Endgame\"为题，提出解决物理AGI的路线图，直接类比LLM的成功路径。核心观点包括视频世界模型作为第二预训练范式、世界行动模型（WAM）、机器人数据收集策略（类似FSD的物理数据飞轮）、EgoScale和灵巧性缩放定律、物理强化学习 bridging the last mile，以及DreamDojo端到端神经物理引擎。预测物理AGI的实现比预期更近，并提及2016年参与OpenAI DGX-1签署与Jensen和Elon的个人经历。","category":"tip"},{"id":"cmoxbojzc00g1sllhzpt6155s","title":"在OpenAI安全运行Codex","title_en":"Running Codex safely at OpenAI","url":"https://openai.com/index/running-codex-safely","source":"OpenAI：官网动态（RSS · 排除企业/客户案例）","publishedAt":"2026-05-08T12:30:00.000Z","summary":"OpenAI通过沙盒隔离、人工审批流程、严格网络策略与原生代理遥测四层防护机制，确保Codex代码生成模型的安全运行。沙盒环境完全隔离执行代码，所有生产请求需经人工审核批准，网络策略限制外部依赖访问，实时遥测系统监控代理行为异常。该安全框架使企业能够合规采用AI编程助手，在保障代码安全性的同时维持开发效率。","category":"tip"},{"id":"cmoxbknwt00fosllh46g63744","title":"Bugbot团队与个人计划更新","title_en":"Updates to Bugbot for Teams and Individuals","url":"https://cursor.com/blog/may-2026-bugbot-changes","source":"Cursor Blog","publishedAt":"2026-05-08T12:00:00.000Z","summary":"Bugbot宣布将团队与个人计划从每月每席位40美元的订阅制改为按使用量计费。现有用户的变化将于2026年6月5日后的下一个账单周期开始生效，例如2026年5月购买的年订阅将在2027年5月切换。团队按需消费计费，个人按包含使用量计费，平均每次运行成本约为1.00-1.50美元，具体取决于PR大小和复杂度。同时，用户现在可配置Bugbot审查PR的工作强度：默认强度下80%被识别的问题在合并时得到解决；高强度模式下可多发现35%的问题，解决率仍保持在80%。现有客户可在Cursor面板中提前切换至用量计费。","category":"ai-products"},{"id":"cmowwbpqm01e1sl90f3oumz48","title":"别自己瞎折腾Claude Code 了！","title_en":"别自己瞎折腾Claude Code 了！ 看看大神帮你归纳好的都至少提升好几倍！ Claude Code 只需要 5 个文件夹，就能直接升级成一支完整开发团队。 这不是吹牛逼啊！ 这个老哥Alva…","url":"https://x.com/berryxia/status/2052719498021773349","source":"X：Berry Xia (@berryxia)","publishedAt":"2026-05-08T11:57:20.000Z","summary":"Alvaro Cintas 提出的\"Agent Development Kit\"系统，仅需五个核心文件夹即可将Claude Code升级为可控、可复制的工程化开发团队。具体包括：CLAUDE.md作为存储库的\"法则\"定义规则；skills/存放可自动调用的可复用工作流；hooks/通过确定性脚本提供安全护栏；subagents/实现上下文隔离的专用于智能体；plugins/确保团队环境一致。该架构将Claude从聊天工具转化为可规模化的工程基础设施，其核心价值在于系统设计而非模型本身。","category":"tip"},{"id":"cmowq8dvo0140slkur6onl8kx","title":"阿里云推出Smart Studio，一站式自托管AI模型平台","title_en":"Smart Studio： Self-host the latest AI 🚀 Stop jumping between platforms. Everything you need to tes…","url":"https://x.com/alibaba_cloud/status/2052680300803596574","source":"X：阿里云 / Alibaba Cloud (@alibaba_cloud)","publishedAt":"2026-05-08T09:21:35.000Z","summary":"阿里云发布Smart Studio平台，旨在整合AI模型测试与服务的全流程，终结用户在不同平台间切换的繁琐。该平台提供即时访问最新SOTA模型（如Qwen3.6-Max、DeepSeek-v4）的能力，支持多模态及图像视频生成模型。其核心功能包括可视化模型实验室，用于并排比较开源与闭源模型的输出效果，并能快速将Hugging Face上的模型转化为实时API，简化部署流程。","category":"ai-products"},{"id":"cmox6tr7800n4sl5s4be6xjek","title":"自适应并行推理：高效推理扩展的新范式","title_en":"Adaptive Parallel Reasoning： The Next Paradigm in Efficient Inference Scaling","url":"http://bair.berkeley.edu/blog/2026/05/08/adaptive-parallel-reasoning","source":"BAIR：Berkeley AI Research Blog","publishedAt":"2026-05-08T09:00:00.000Z","summary":"自适应并行推理是一种新范式，它让大语言模型能够自主决定何时分解任务、并行处理多少子任务以及如何协调结果，以应对序列推理中因探索路径增长而导致的延迟增加和\"上下文腐化\"问题。近期研究如ThreadWeaver和Multiverse通过动态控制并行线程，在数学与代码推理基准上取得了显著性能提升，同时大幅降低了延迟。这标志着从固定并行策略到自适应智能控制的转变，为复杂任务的推理提供了高效且可扩展的解决方案。","category":"tip"},{"id":"cmownduwl00kdslkuwxyxo7l7","title":"在AMD ROCm平台微调临床问答模型MedQA：无需CUDA","title_en":"MedQA： Fine-Tuning a Clinical AI on AMD ROCm - No CUDA Required","url":"https://huggingface.co/blog/lablab-ai-amd-developer-hackathon/medqa","source":"Hugging Face：Blog（RSS）","publishedAt":"2026-05-08T07:54:18.000Z","summary":"一篇博客介绍了在AMD ROCm开源计算平台上微调临床问答AI模型MedQA的实践。该工作成功摆脱了对英伟达CUDA生态的依赖，证明了在AMD GPU上高效运行并适配医疗领域大模型的可行性。此案例源于Lablab.ai与AMD联合举办的开发者黑客松，为在非CUDA环境中进行AI训练提供了具体的技术参考。","category":"tip"},{"id":"cmowiv8kp0659slcxtj9qyl84","title":"消息称 Anthropic 拟今夏融资数百亿美元，冲击万亿估值反超 OpenAI","title_en":null,"url":"https://www.ithome.com/0/947/647.htm","source":"IT之家（RSS）","publishedAt":"2026-05-08T05:40:09.000Z","summary":"据《金融时报》报道，人工智能公司Anthropic计划今年夏季进行大规模融资，以扩展计算能力。此轮融资额最高可达500亿美元，融资前估值预计达9000亿美元，完成后公司估值将接近1万亿美元，从而超越竞争对手OpenAI目前约8520亿美元的估值。公司年化收入预计很快将超过450亿美元，较去年底大幅增长。投资者意在为其年底可能的IPO提前建立持仓，但具体条款尚未最终确定。","category":"industry"},{"id":"cmowcflpg04n8slcxecg6jvdu","title":"AI 终端智能化分级国标出炉：L1~L4 等级，涉及手机、电脑、眼镜、电视、耳机等","title_en":null,"url":"https://www.ithome.com/0/947/582.htm","source":"IT之家（RSS）","publishedAt":"2026-05-08T03:06:06.000Z","summary":"工信部等部门联合发布《人工智能终端智能化分级》系列国家标准。该标准采用\"2+N\"架构，基础部分明确了AI终端的定义、分级体系与测试方法。智能化水平从低到高分为L1响应级、L2工具级、L3辅助级和L4协同级四个等级，其中L4级标准将在后续修订中完善。首批标准覆盖手机、电脑、电视、眼镜、汽车座舱、音箱、耳机共7个品类，小米、华为、荣耀等为主要起草单位，旨在为各类智能终端的智能化水平提供统一评价依据。","category":"industry"}]};
+loadItems();
+</script>
+</body>
+</html>
