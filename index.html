@@ -287,13 +287,8 @@ body{font-family:var(--font);color:var(--text-primary);min-height:100vh;backgrou
 </div>
 
 <script>
-const API_ENDPOINTS = [
-  { name: 'proxy', prefix: '/api/public' },
-  { name: 'direct', prefix: 'https://aihot.virxact.com/api/public' },
-];
 const REFRESH_INTERVAL = 5 * 60 * 1000;
 const DAILY_BJT_HOUR = 8;
-let activeEndpoint = null;
 
 const CAT_ICONS = {
   'ai-models': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
@@ -337,19 +332,37 @@ const $refreshDot = document.getElementById('refreshDot'), $refreshText = docume
 function cacheGet(key) { try { const r = localStorage.getItem(key); if (!r) return null; const {data,ts} = JSON.parse(r); return {data, age: Date.now()-ts}; } catch { return null; } }
 function cacheSet(key, data) { try { localStorage.setItem(key, JSON.stringify({data, ts:Date.now()})); } catch {} }
 
+const API_ENDPOINTS = [
+  { name: 'proxy', prefix: '/api/public' },
+  { name: 'direct', prefix: 'https://aihot.virxact.com/api/public' },
+];
+let activeEndpoint = null;
+let endpointDebug = [];
+
 async function probeEndpoint(ep) {
+  const url = ep.prefix + '/items?mode=selected&take=1';
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 8000);
-    const r = await fetch(ep.prefix + '/items?mode=selected&take=1', { signal: ctrl.signal });
+    const r = await fetch(url, { signal: ctrl.signal });
     clearTimeout(timer);
-    if (r.ok) { const d = await r.json(); if (d.items) return true; }
-  } catch {}
+    if (r.ok) {
+      const d = await r.json();
+      if (d.items) {
+        endpointDebug.push(`${ep.name}: OK`);
+        return true;
+      }
+    }
+    endpointDebug.push(`${ep.name}: HTTP ${r.status}`);
+  } catch (e) {
+    endpointDebug.push(`${ep.name}: ${e.name || e.message}`);
+  }
   return false;
 }
 
 async function detectEndpoint() {
   if (activeEndpoint) return activeEndpoint;
+  endpointDebug = [];
   const saved = localStorage.getItem('aihot_ep');
   if (saved) {
     try {
@@ -365,26 +378,35 @@ async function detectEndpoint() {
       return ep;
     }
   }
-  return API_ENDPOINTS[0];
+  endpointDebug.push('All endpoints failed');
+  return null;
 }
 
 async function apiFetch(path) {
   const ep = await detectEndpoint();
+  if (!ep) throw new Error('No API endpoint available: ' + endpointDebug.join('; '));
   const url = ep.prefix + path;
-  const r = await fetch(url);
-  if (!r.ok) {
-    if (r.status === 404 || r.status === 403) {
-      activeEndpoint = null;
-      localStorage.removeItem('aihot_ep');
-      const ep2 = await detectEndpoint();
-      if (ep2 !== ep) {
-        const r2 = await fetch(ep2.prefix + path);
-        if (r2.ok) return r2.json();
+  try {
+    const r = await fetch(url);
+    if (!r.ok) {
+      if (r.status === 404 || r.status === 403 || r.status === 502) {
+        activeEndpoint = null;
+        localStorage.removeItem('aihot_ep');
+        const ep2 = await detectEndpoint();
+        if (ep2 && ep2 !== ep) {
+          const r2 = await fetch(ep2.prefix + path);
+          if (r2.ok) return r2.json();
+        }
       }
+      throw new Error(`API ${r.status} at ${ep.name}`);
     }
-    throw new Error(`API ${r.status}`);
+    return r.json();
+  } catch (e) {
+    if (e.message.startsWith('API ') || e.message.startsWith('No API')) throw e;
+    activeEndpoint = null;
+    localStorage.removeItem('aihot_ep');
+    throw new Error(`Network error at ${ep.name}: ${e.message}`);
   }
-  return r.json();
 }
 
 function getFavData() { try { return JSON.parse(localStorage.getItem('aihot_fav') || '{"folders":{}}'); } catch { return {folders:{}}; } }
@@ -720,7 +742,7 @@ async function loadItems(useCache=true) {
   const ck='aihot_items';
   if(useCache){const c=cacheGet(ck);if(c&&c.age<5*60*1000){allItems=c.data.items||[];nextCursor=c.data.nextCursor||null;renderContent();isLoading=false;lastRefreshTime=Date.now();updateRefreshIndicator();return;}if(c){allItems=c.data.items||[];nextCursor=c.data.nextCursor||null;renderContent();}}
   try{const d=await apiFetch(`/items?mode=selected&take=50`);allItems=d.items||[];nextCursor=d.nextCursor||null;cacheSet(ck,{items:allItems,nextCursor});renderContent();$offlineNotice.classList.remove('visible');lastRefreshTime=Date.now();updateRefreshIndicator()}
-  catch(e){if(!allItems.length)$content.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">加载失败，请检查网络后刷新<br><small>${escHtml(e.message)}</small></div></div>`;$offlineNotice.classList.add('visible');$refreshDot.className='refresh-dot error';$refreshText.textContent='连接失败'}
+  catch(e){if(!allItems.length)$content.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="empty-state-text">加载失败<br><small>${escHtml(e.message)}</small><br><small style="color:var(--text-tertiary)">探测: ${endpointDebug.join(' | ')}</small></div></div>`;$offlineNotice.classList.add('visible');$refreshDot.className='refresh-dot error';$refreshText.textContent='连接失败'}
   isLoading=false;
 }
 async function loadMore(){if(!nextCursor||isLoading)return;const b=document.getElementById('loadMoreBtn');if(b){b.disabled=true;b.textContent='加载中...';}isLoading=true;try{const d=await apiFetch(`/items?mode=selected&take=50&cursor=${encodeURIComponent(nextCursor)}`);allItems=allItems.concat(d.items||[]);nextCursor=d.nextCursor||null;renderContent()}catch{}isLoading=false;}
